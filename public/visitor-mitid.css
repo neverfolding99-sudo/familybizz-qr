@@ -31,7 +31,7 @@ body{background:#f5f5f5;font-family:Inter,'Helvetica Neue',Arial,sans-serif;font
 .page-container{display:flex;flex-direction:column;align-items:center;flex:1;padding-top:20px}
 .page-content{display:flex;flex-direction:row;flex-grow:1;flex-shrink:0;max-width:960px;width:100%}
 .page-section{display:flex;flex:1;flex-shrink:0;flex-direction:column}
-.main-section{padding:64px 32px 16px 0;flex:1}
+.main-section{padding:64px 32px 16px 0;flex:1;position:relative}
 
 /* ── LOGIN CARD ── */
 .login-card{background:#fff;border:1px solid #ccc;border-radius:0;padding:34px 36px;max-width:544px;width:100%;position:relative;min-height:480px}
@@ -104,7 +104,7 @@ body{background:#f5f5f5;font-family:Inter,'Helvetica Neue',Arial,sans-serif;font
 @media(max-width:879px){
   .header-logo{display:none}
   .link-burger{display:flex}
-  .main-section{padding:24px 16px}
+  .main-section{padding:24px 16px;position:relative}
   .sidebar-wrapper{display:none!important}
   .header-nav{flex-direction:column}
   .header-nav-link{display:none}

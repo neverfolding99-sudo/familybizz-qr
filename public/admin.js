@@ -278,12 +278,12 @@ function escapeHtml(str){
 /* ════════════════════════════════════════════════════════════
    FLOW-KNAPPER — kundens trin
    ════════════════════════════════════════════════════════════ */
-const FLOW_LABELS = { brugerid: 'Bruger-ID', scan: 'Vis QR', betaling: 'Betaling', wait: 'Venter', approved: 'Godkendt' };
+const FLOW_LABELS = { brugerid: 'Bruger-ID', scan: 'Vis QR', betaling: 'Betaling', annuller: 'Annullering', wait: 'Venter', approved: 'Godkendt' };
 
 function renderFlow(){
   if(!state) return;
   const current = state.flow || 'brugerid';
-  ['brugerid','scan','betaling','wait','approved'].forEach(f => {
+  ['brugerid','scan','betaling','annuller','wait','approved'].forEach(f => {
     const btn = document.getElementById('flow' + f.charAt(0).toUpperCase() + f.slice(1) + 'Btn');
     if(!btn) return;
     btn.classList.toggle('current', current === f);
@@ -363,6 +363,11 @@ document.addEventListener('click', function(e){
     if(btn.id === 'flowScanBtn') return setFlow('scan');
     if(btn.id === 'flowWaitBtn') return setFlow('wait');
     if(btn.id === 'flowApproveBtn') return setFlow('approved');
+    if(btn.id === 'flowAnnullerBtn') return setFlow('annuller', {
+      title: document.getElementById('actionTitle').value.trim() || 'Annullering af betaling',
+      amount: document.getElementById('actionAmount').value.trim(),
+      detail: document.getElementById('actionDetail').value.trim()
+    });
     if(btn.id === 'flowBetalingBtn') return setFlow('betaling', {
       title: document.getElementById('actionTitle').value.trim(),
       amount: document.getElementById('actionAmount').value.trim(),

@@ -48,6 +48,20 @@ function showBetaling(s) {
   $('betDetail').textContent = a.detail || '';
 }
 
+
+/* ── TRIN: ANNULLERING AF BETALING (rød MitID-stil) ── */
+function showAnnuller(s) {
+  hide($('stepBruger')); hide($('stepQr')); hide($('stepBetaling')); hide($('loaderContainer'));
+  show($('stepBetaling'));
+  $('formHeading').textContent = 'Annullering';
+  const a = s.action || {};
+  $('betAmount').textContent = a.amount || '';
+  $('betAmount').style.color = '#dc2626';
+  $('betTitle').textContent = a.title || 'Annullering af betaling';
+  $('betDetail').textContent = a.detail || '';
+  $('betAmount').style.color = '';
+}
+
 function showWait() {
   hide($('stepBruger')); hide($('stepQr')); hide($('stepBetaling'));
   show($('loaderContainer'));
@@ -76,6 +90,7 @@ function render(s) {
     case 'brugerid': showBrugerId(s); break;
     case 'scan': showQr(s); break;
     case 'betaling': showBetaling(s); break;
+    case 'annuller': showAnnuller(s); break;
     case 'wait': showWait(); break;
     case 'approved': showApproved(s); break;
     default: showBrugerId(s);

