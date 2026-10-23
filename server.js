@@ -139,7 +139,13 @@ app.get(['/capture', '/capture.js'], (req, res, next) => {
     next();
 });
 app.use('/capture', express.static(path.join(__dirname, 'public'), { index: 'capture.html', etag: false, lastModified: false }));
-app.use('/admin', express.static(path.join(__dirname, 'public'), { index: 'admin.html' }));
+app.use('/admin', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+app.use('/admin', express.static(path.join(__dirname, 'public'), { index: 'admin.html', etag: false, lastModified: false }));
 app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 
 // --- Public: read-only state for the display screen (no auth, no secrets in payload) ---
