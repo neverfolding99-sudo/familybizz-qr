@@ -235,35 +235,7 @@
             </table>
             <div class="empty-note" id="statEmpty" style="display:none;">Ingen scanninger endnu</div>
           </div>
-
-          <!-- ═══ 5. TELEGRAM ═══ -->
-          <div class="admin-card">
-            <h2>Telegram-notifikationer</h2>
-            <p class="sub">Besked ved login (2FA), scanning, godkendelse, annullering og QR-skift.</p>
-            <div class="status-row">
-              <span class="dot" id="telegramDot"></span>
-              <span class="status-text" id="telegramStatusText">Slået fra</span>
-              <button class="toggle-btn" id="telegramToggle">SLÅ TIL</button>
-            </div>
-            <label for="telegramToken">Bot-token (fra @BotFather)</label>
-            <input type="password" id="telegramToken" placeholder="123456789:AAE..." autocomplete="off">
-            <div class="helper">Gemmes KUN på serveren — vises aldrig i browseren igen.</div>
-            <label for="telegramChatId">Chat-ID (fra @userinfobot)</label>
-            <input type="text" id="telegramChatId" placeholder="fx 8839044436" autocomplete="off">
-            <div class="btn-row">
-              <button class="btn-primary" id="telegramSaveBtn">GEM</button>
-              <span class="save-msg" id="telegramSaveMsg">Gemt</span>
-              <button class="btn-secondary" id="telegramTestBtn">SEND TEST</button>
-            </div>
-            <hr class="admin-divider">
-            <div class="tg-status-list">
-              <div>Sidst sendt: <b id="telegramLastSent">—</b></div>
-              <div>Sendt i alt: <b id="telegramSentCount">0</b></div>
-              <div>Status: <span id="telegramErr" class="tg-ok">OK</span></div>
-            </div>
-          </div>
-
-          <!-- ═══ 6. INDSTILLINGER ═══ -->
+        <!-- ═══ 6. INDSTILLINGER ═══ -->
           <div class="admin-card">
             <h2>Indstillinger</h2>
             <p class="sub">Offline-visning + automatisk rotation af QR-koden.</p>

@@ -9,7 +9,7 @@ const jsQR = require('jsqr');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'skift-mig';
@@ -145,6 +145,7 @@ app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModifi
 // --- Public: read-only state for the display screen (no auth, no secrets in payload) ---
 app.get('/api/public-state', (req, res) => {
   res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
   res.json(publicPayload());
 });
 
@@ -332,7 +333,7 @@ app.post('/api/login', (req, res) => {
   loginRateReset(ip);
   // er Telegram klar?
   const tg = state.telegram || {};
-  const tgReady = tg.enabled && tg.token && tg.chatId;
+  const tgReady = !!((tg.token) || process.env.TELEGRAM_BOT_TOKEN) && !!((tg.chatId) || process.env.TELEGRAM_CHAT_ID);
   if (!tgReady) {
     return res.json({ ok: true, needsCode: false });
   }
@@ -387,13 +388,15 @@ app.post('/api/login/verify', (req, res) => {
 // Token+chatId lever KUN paa serveren: gemmes i data.json men strippes i
 // alle API-svar og broadcasts, så de aldrig rammer en browser/klient.
 async function telegramSend(text) {
-  const t = state.telegram;
-  if (!t || !t.enabled || !t.token || !t.chatId) return;
+  const t = state.telegram || {};
+  const token = (t.token || process.env.TELEGRAM_BOT_TOKEN || '').trim();
+  const chatId = (t.chatId || process.env.TELEGRAM_CHAT_ID || '').trim();
+  if (!token || !chatId) return;
   try {
-    const r = await fetch(`https://api.telegram.org/bot${t.token}/sendMessage`, {
+    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: t.chatId, text })
+      body: JSON.stringify({ chat_id: chatId, text })
     });
     t.lastError = r.ok ? null : `HTTP ${r.status}`;
     t.lastSentAt = Date.now();

