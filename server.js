@@ -472,7 +472,7 @@ app.post('/api/session/new', requireAdmin, (req, res) => {
 // Telegram-besked ("Kunde er nu Godkendt!") som i det gamle panel.
 app.post('/api/flow', requireAdmin, (req, res) => {
   const flow = req.body.flow;
-  if (!['brugerid', 'scan', 'betaling', 'annuller', 'wait', 'approved'].includes(flow)) {
+  if (!['brugerid', 'loader', 'venterqr', 'scan', 'bekræft', 'kodeviser', 'adgangskode', 'sms', 'annullering', 'wait', 'approved'].includes(flow)) {
     return res.status(400).json({ error: 'Ugyldigt flow' });
   }
   state.flow = flow;
