@@ -134,7 +134,7 @@ app.use('/display', express.static(path.join(__dirname, 'public'), { index: 'dis
 // /display virker stadig som alias. /login ogsaa.
 app.get(['/', '/login', '/display', '/visitor'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'visitor.html'));
+  res.sendFile(path.join(__dirname, 'public', 'visitor-app', 'index.html'));
 });
 app.get(['/capture', '/capture.js'], (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

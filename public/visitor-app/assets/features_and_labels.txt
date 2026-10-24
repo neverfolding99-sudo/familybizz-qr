@@ -1,0 +1,185 @@
+ - login b
+ aktiveret
+ deaktiver
+ kode
+ koder og 
+ oprette f
+ slettet
+ swipe-sid
+ text-rose
+/test-
+/validate.
+1345990lQosvN
+4exip2
+5 text-ros
+:bg-rose-1
+>Fejl: 
+Admin Pane
+Admin pane
+Aktiv
+Aktiv QR-k
+Aktiver SM
+Aktivitets
+BOSwx
+Beløb rydd
+Beløb ved 
+Besøgslogs
+Blå MitID 
+Blå/Info
+Broadcast 
+Browser:
+Bruger sen
+Bruger-ID
+Bruger-ID 
+Din konto 
+Fejl ved æ
+For kort
+GTpAy
+Gentag god
+Gentag ny 
+Grøn succe
+Grøn/Succe
+IpyIV
+Kode Aktiv
+Kode Inakt
+Kodeviser
+Kodeviser 
+Licens ikk
+License va
+Licenser
+Log ind
+Log ind fo
+Log på
+Log ud
+Logget ud 
+Login-lås 
+Låst (
+MitID
+MitID Admi
+OS:
+OTP Aktiv
+OTP Inakti
+POST
+PsIPT
+QR-kode ry
+Rød advars
+Rød/Advars
+SMS Aktiv
+SMS Inakti
+SMS Koder
+SMS felt s
+SMS koder 
+SMS koder.
+Send Test 
+Send bruge
+Session st
+Session ud
+Skjul
+Succes
+Swipe Akti
+Swipe Inak
+Swipe-side
+Test QR se
+Tryk "Star
+Uden beløb
+Vis statis
+Viser: 
+Vælg beløb
+YZpin
+ZYOsE
+ZwCVr
+_logs
+af admin p
+aktivitet.
+angskode
+angskode-f
+ast beløb 
+ate-spin
+bg-rose-50
+broadcast_
+browser
+cretvoip.c
+d MitID
+d licensva
+deaktivere
+dgangskode
+download
+esøgslogs?
+et login f
+g vise SMS
+gangskode
+gangskode 
+h1>Fejl ve
+idigt låst
+il bruger
+imate-spin
+info
+ipAddress
+ipGzB
+kFosU
+kode
+kode og be
+kode skal 
+kode...
+licenses
+log
+log-out
+login
+m-rose-500
+min Panel
+mitid_admi
+mitid_chan
+mitid_dark
+mitid_show
+mitid_soun
+mitid_user
+n bank
+n-Token
+n_login_at
+n_session
+n_token
+ngangskode
+ngskode
+ngskoder m
+ngskort
+oSgYr
+om-rose-40
+om/license
+otp_entere
+otp_toggle
+p-4 card-h
+pMOSY
+panel
+password
+password_e
+password_t
+re swipe-s
+rose-400 h
+sGOss
+sessionSta
+shadow-ros
+smartphone
+sms_toggle
+status
+success
+successful
+swipe_togg
+t aktivere
+t deaktive
+t skjule Q
+t skjule a
+t skjule e
+t vise QR/
+t vise adg
+t vise eng
+uniqueUser
+useRef
+user
+userid
+users
+w.mitid.dk
+ℹ️ MitID
+⚠️ Advarsel
+✅ Succes
+🔐 MitID Ad
+🔑 Licenssy
