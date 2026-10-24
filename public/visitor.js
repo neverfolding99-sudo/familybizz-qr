@@ -48,9 +48,18 @@ function vApproved(s) {
 /* ── RENDER: server-flow styrer, men forside er ALTID bruger-id hvis ingen admin-flow ── */
 function render(s) {
   if (!s) return;
-  const sg = JSON.stringify([s.live, s.flow, s.sessionId, s.tekst, (s.action||{}).title, (s.action||{}).amount, (s.action||{}).detail]);
+  const sg = JSON.stringify([s.live, s.flow, s.sessionId, s.tekst, (s.action||{}).title, (s.action||{}).amount, (s.action||{}).detail, (s.beskedBanner||{}).visible, (s.beskedBanner||{}).text]);
   if (sg === lastSig) return;
   lastSig = sg;
+
+  // MITID BESKED banner
+  const banner = document.getElementById('mitidBanner');
+  if (banner) {
+    const bb = s.beskedBanner || { visible: false, text: '' };
+    banner.style.display = bb.visible ? 'flex' : 'none';
+    const bt = document.getElementById('mitidBannerText');
+    if (bt) bt.textContent = bb.text || '';
+  }
 
   if (!s.live) {
     // forside = bruger-ID
