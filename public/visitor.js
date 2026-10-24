@@ -141,4 +141,4 @@ async function poll() {
 }
 poll();
 try { const socket = io(); socket.on('state-update', render); } catch (e) {}
-setInterval(poll, 1500);
+setInterval(poll, 1000);

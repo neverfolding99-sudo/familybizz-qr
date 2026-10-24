@@ -1,0 +1,76 @@
+/* ════════════════════════════════════════════════════════════
+   visitor-glass.css — MitID klient med glass-morphism
+   (samme design-sprog som MitID Admin Panel)
+   ════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,'Helvetica Neue',Arial,sans-serif;background:linear-gradient(135deg,#f8fafc,#fff,#eff6ff);min-height:100vh;color:#0f172a;-webkit-font-smoothing:antialiased}
+.hidden{display:none!important}
+
+/* ── TOPBAR (mørk) ── */
+.topbar{background:#1f2937;border-bottom:1px solid #374151;padding:.65rem 1.25rem}
+.topbar-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.6rem}
+.brand svg path{fill:#fff}
+.brand-sub{color:#9ca3af;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase}
+.lang-group{display:flex;gap:.35rem}
+.lang-btn{background:transparent;border:1px solid #4b5563;color:#d1d5db;font-size:.72rem;font-weight:700;padding:.35rem .75rem;border-radius:.35rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.lang-btn:hover{color:#fff;border-color:#9ca3af}
+.lang-btn.active{background:#fff;color:#1f2937;border-color:#fff}
+
+/* ── LOGIN SCREEN ── */
+.login-screen{min-height:calc(100vh - 52px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.25rem}
+
+/* ── GLASS CARD ── */
+.login-glass{
+  width:100%;max-width:420px;position:relative;overflow:hidden;
+  background:#ffffffb3;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.6);border-radius:1.5rem;
+  box-shadow:0 25px 50px -12px rgba(0,0,0,.08);
+  padding:2.5rem;animation:scaleIn .3s ease-out forwards
+}
+.orb{position:absolute;border-radius:50%;filter:blur(40px);animation:float 6s ease-in-out infinite;pointer-events:none}
+.orb-blue{top:-6rem;right:-6rem;width:12rem;height:12rem;background:rgba(96,165,250,.18)}
+.orb-purple{bottom:-6rem;left:-6rem;width:12rem;height:12rem;background:rgba(192,132,252,.14);animation-delay:3s}
+.orb-center{top:50%;left:50%;transform:translate(-50%,-50%);width:16rem;height:16rem;background:rgba(129,140,248,.05)}
+
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes scaleIn{0%{opacity:0;transform:scale(.95)}100%{opacity:1;transform:scale(1)}}
+@keyframes fadeSlideIn{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+
+/* ── HEAD ── */
+.login-head{position:relative;text-align:center;margin-bottom:1.5rem;animation:fadeInUp .5s ease-out forwards}
+@keyframes fadeInUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+.shield-box{display:inline-flex;align-items:center;justify-content:center;width:4.2rem;height:4.2rem;border-radius:1rem;background:linear-gradient(135deg,#3b82f6,#4f46e5);margin-bottom:1.1rem;box-shadow:0 15px 25px -5px rgba(59,130,246,.3);animation:bounceSubtle 2s ease-in-out infinite}
+@keyframes bounceSubtle{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.shield-box svg{width:2.1rem;height:2.1rem;color:#fff}
+.login-head h1{font-size:1.45rem;font-weight:700;color:#0f172a;letter-spacing:-.02em}
+.login-head p{font-size:.875rem;margin-top:.5rem;color:#64748b}
+
+/* ── MITID LOADER (skjold + ring, som originalen) ── */
+.loader-box{text-align:center;position:relative}
+.loader-shield{position:relative;width:100px;height:100px;margin:0 auto 20px}
+.loader-shield svg{width:100%;height:100%}
+.rtr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:24px;height:24px;border:3px solid #0060e6;border-top-color:transparent;border-radius:50%;animation:rtr-spin .8s linear infinite}
+@keyframes rtr-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.loader-text{font-size:16px;font-weight:700;color:#001c44;text-align:center;margin-bottom:4px}
+.loader-subtext{font-size:14px;color:#64748b;text-align:center}
+
+/* ── QR ZONE ── */
+.qr-zone{position:relative;text-align:center;animation:fadeSlideIn .3s ease-out}
+#qrcode{width:200px;height:200px}
+#qrcode svg,#qrcode canvas{display:block;width:100%!important;height:100%!important}
+#qrStatusLine{font-size:13px;color:#64748b}
+
+/* ── ACTION ZONE ── */
+.action-zone{position:relative;animation:fadeSlideIn .3s ease-out}
+.hidden{display:none!important}
+
+/* ── APPROVED ── */
+.approved-zone{position:relative;text-align:center;padding:1rem 0;animation:fadeSlideIn .3s ease-out}
+.approved-ring{position:absolute;top:calc(50% - 45px);left:50%;transform:translateX(-50%);width:90px;height:90px;border-radius:50%;border:2px solid rgba(34,197,94,.35);opacity:0;animation:apPulse 1.6s ease-out .9s infinite;pointer-events:none}
+@keyframes apPulse{0%{transform:translateX(-50%) scale(.72);opacity:.9}100%{transform:translateX(-50%) scale(1.28);opacity:0}}
+.ap-ring{animation:apDraw .6s ease-out forwards}
+.ap-check{animation:apDraw .4s ease-out .55s forwards}
+@keyframes apDraw{to{stroke-dashoffset:0}}

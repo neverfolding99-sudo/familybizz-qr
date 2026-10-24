@@ -199,3 +199,11 @@ tr:last-child td{border-bottom:none}
 .preset-red{border-color:#dc2626!important;color:#dc2626!important}
 .preset-red:hover{border-color:#b91c1c!important;color:#b91c1c!important;background:#fef2f2!important}
 .flow-annuller{border-color:#dc2626!important}.flow-annuller .flow-num{background:#dc2626!important;color:#fff!important}.flow-btn.current.flow-annuller{background:#fef2f2!important;border-color:#dc2626!important}
+/* ── POLISH: hover + transitions ── */
+.card{transition:box-shadow .2s,border-color .2s}
+.card:hover{box-shadow:0 15px 30px -5px rgba(0,0,0,.08)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary:active{transform:scale(.98)}
+.toggle-btn:active{transform:scale(.96)}
+.flow-btn:active{transform:scale(.98)!important}
+input[type=text]:hover,input[type=url]:hover,textarea:hover{border-color:#cbd5e1}
