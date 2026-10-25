@@ -1,6 +1,6 @@
-// ============================================================
-// SAME-ORIGIN BRO — videresender klonsidens API-kald til vores
-// egen backend (/api/public/...) så admin-panelet og visitor-
+﻿// ============================================================
+// SAME-ORIGIN BRO â€” videresender klonsidens API-kald til vores
+// egen backend (/api/public/...) sÃ¥ admin-panelet og visitor-
 // siden deler data i realtid. Licens-tjek besvares lokalt.
 // ============================================================
 (function () {
@@ -18,7 +18,7 @@
     console.log('%c[BRO] ' + method + ' ' + url, 'color:#0d9488;font-weight:bold', bodyText ? ' body=' + bodyText.slice(0, 200) : '');
   }
 
-  // Licens-tjek besvares altid lokalt (kræves af browser-modulet)
+  // Licens-tjek besvares altid lokalt (krÃ¦ves af browser-modulet)
   function isLicense(url) {
     return /licen|valid/i.test(String(url));
   }
@@ -27,7 +27,7 @@
     return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
 
-  // Kort mapning: fuld ekstern URL -> samme sti på vores backend
+  // Kort mapning: fuld ekstern URL -> samme sti pÃ¥ vores backend
   function localUrl(url) {
     var u = new URL(url, location.href);
     return u.pathname + u.search; // fx /api/public/settings/show-sms
@@ -43,8 +43,10 @@
       if (isLicense(url)) {
         return Promise.resolve(ok({ valid: true, success: true, status: 'active', message: 'License valid', license: { key: 'LOCAL', active: true } }));
       }
-      var headers = new Headers((init && init.headers) || {});
-      return origFetch(localUrl(url), { method: method, headers: headers, body: body });
+      // Videresend same-origin â€” brug Request-objektets fulde init sÃ¥ keepalive/connection
+      // reuse fungerer og browserens connection pool ikke udtÃ¸mmes af de hyppige polls.
+      var opts = { method: method, headers: (init && init.headers) || undefined, body: (method === 'GET' || method === 'HEAD') ? undefined : body, cache: 'no-store', keepalive: false, credentials: 'omit' };
+      return origFetch(localUrl(url), opts);
     }
     return origFetch.apply(this, arguments);
   };
@@ -54,6 +56,10 @@
   XMLHttpRequest.prototype.open = function (method, url) {
     this.__sbUrl = url;
     this.__sbMethod = (method || 'GET').toUpperCase();
+    if (url && isApi(url) && !isLicense(url)) {
+      var args = Array.prototype.slice.call(arguments);
+      args[1] = localUrl(url); // omskriv til same-origin sti
+    }
     return origOpen.apply(this, arguments);
   };
   XMLHttpRequest.prototype.send = function (body) {
@@ -70,18 +76,8 @@
         }, 50);
         return;
       }
-      var wrapped = new XMLHttpRequest();
-      wrapped.open(self.__sbMethod, localUrl(self.__sbUrl), true);
-      wrapped.onreadystatechange = function () {
-        self.status = wrapped.status;
-        self.responseText = wrapped.responseText;
-        self.response = wrapped.responseText;
-        self.readyState = wrapped.readyState;
-        if (self.onreadystatechange) self.onreadystatechange.call(self);
-        if (self.onload) self.onload.call(self);
-      };
-      wrapped.send(b);
-      return;
+      // Ret URL'en direkte (ingen wrapped-XHR): browseren hÃ¥ndterer connection-reuse selv
+      return origSend.call(self, b);
     }
     return origSend.apply(this, arguments);
   };
