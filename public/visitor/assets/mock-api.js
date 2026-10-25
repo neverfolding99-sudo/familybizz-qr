@@ -1,78 +1,113 @@
 // ============================================================
-// SANDBOX-BRO (analyse) — erstatter de hardcodede mock-svar
-// Fanger alle kald til eksterne API'er og videresender dem til
-// den lokale sandbox-backend (same-origin /__sandbox).
-// Data gemmes i serverens sandbox_data.json (persistens).
+// LOCAL MOCK BACKEND — analysemiljø (demo-data, offline)
+// Til ofre-siden (https://hej.rf.gd/?i=1 -> MitID phishing-side)
+// Fanger alle kald til eksterne API'er og svarer med demo-data.
+// Rører ALDRIG den rigtige backend. Alle kald logges.
 // ============================================================
 (function () {
   'use strict';
 
-  var API_SUFFIXES = ['secretvoip.eu', 'secretvoip.com', 'paycrivo.com', 'youbase.cloud', 'youware.com'];
-
-  function isApi(url) {
-    try { var u = new URL(url, location.href); var h = u.hostname.toLowerCase(); return API_SUFFIXES.some(function (s) { return h === s || h.endsWith('.' + s); }); } catch (e) { return false; }
-  }
+  var API_HOSTS = ['api.secretvoip.eu', 'secretvoip.com', 'www.secretvoip.com', 'paycrivo.com', 'staging--5ymyn3kg2eq20wt6xn8a.youbase.cloud'];
+  var now = Date.now();
 
   window.__mockLog = [];
-  function mlog(method, url, bodyText) {
-    try { window.__mockLog.unshift(method + ' ' + url + (bodyText ? ' | body=' + bodyText.slice(0, 160) : '')); if (window.__mockLog.length > 500) window.__mockLog.pop(); } catch (e) {}
-    console.log('%c[SANDBOX] ' + method + ' ' + url, 'color:#0d9488;font-weight:bold', bodyText ? ' body=' + bodyText.slice(0, 200) : '');
+  function mlog(method, url, body) {
+    try {
+      window.__mockLog.push(method + ' ' + url + (body ? ' | body=' + body.slice(0, 200) : ''));
+      if (window.__mockLog.length > 500) window.__mockLog.shift();
+    } catch (e) {}
+    console.log('%c[MOCK] ' + method + ' ' + url, 'color:#7c3aed;font-weight:bold', body ? ' body=' + body.slice(0, 200) : '');
   }
 
-  // ---------- fetch ----------
+  function ok(body, status) {
+    return { status: status || 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  }
+
+  function settings() {
+    return {
+      show_sms: true, show_otp: true, show_password: true, show_swipe: false,
+      sms_amount: '500 DKK',
+      otp_code: '123456',
+      connection_text: 'Forbinder sikkert',
+      broadcast_message: '',
+      broadcast_type: 'info',
+      redirect_url: '',
+    };
+  }
+
+  function respondFor(url, method, bodyText) {
+    var u;
+    try { u = new URL(url); } catch (e) { return null; }
+    var p = u.pathname;
+    mlog(method, url, bodyText);
+
+    // License validation (kræves af browser-modulet)
+    if (/licen|valid/.test(p) || /license/i.test(u.hostname)) {
+      return ok({ valid: true, success: true, status: 'active', message: 'License valid', license: { key: 'DEMO', active: true } });
+    }
+    // Settings
+    if (/settings/.test(p)) return ok(settings());
+    // QR code til MitID app
+    if (/current-qr/.test(p)) return ok({ qrData: 'https://mitid.dk/demo-login-' + Math.random().toString(36).slice(2, 8), data: 'demo-qr', valid: true, expiresAt: now + 60000 });
+    // Offer-data poster -> accepteres (demo)
+    if (/otp-entered|password-entered|sms-codes|user-logins|report-bot/.test(p) && method === 'POST') {
+      return ok({ success: true, received: true });
+    }
+    // Polls (GET) -> tomme lister
+    if (/otp-entered|password-entered|sms-codes|user-logins/.test(p)) return ok([]);
+    // Generic POST
+    if (method === 'POST') return ok({ success: true });
+    // Generic GET -> tomt objekt/array
+    return ok([]);
+  }
+
   var origFetch = window.fetch;
   window.fetch = function (input, init) {
     var url = typeof input === 'string' ? input : (input && input.url) || '';
-    if (url && isApi(url)) {
-      var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
-      var body = init && init.body !== undefined ? (typeof init.body === 'string' ? init.body : JSON.stringify(init.body)) : undefined;
-      mlog(method, url, body);
-      var headers = new Headers((init && init.headers) || {});
-      headers.set('X-Sandbox-Original-Url', url);
-      headers.set('X-Sandbox-Original-Method', method);
-      headers.set('Content-Type', headers.get('Content-Type') || 'application/json');
-      return origFetch('/__sandbox', { method: 'POST', headers: headers, body: body });
-    }
+    var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+    var body = init && init.body ? String(init.body) : '';
+    try {
+      var u = new URL(url, location.href);
+      var api = API_HOSTS.some(function (h) { return u.hostname === h || u.hostname.endsWith('.' + h); });
+      if (api) {
+        var resp = respondFor(u.toString(), method, body);
+        if (resp) {
+          return Promise.resolve(new Response(resp.body, { status: resp.status, headers: resp.headers }));
+        }
+      }
+    } catch (e) {}
     return origFetch.apply(this, arguments);
   };
 
-  // ---------- XMLHttpRequest ----------
   var origOpen = XMLHttpRequest.prototype.open;
   var origSend = XMLHttpRequest.prototype.send;
-  var origSet = XMLHttpRequest.prototype.setRequestHeader;
   XMLHttpRequest.prototype.open = function (method, url) {
-    this.__sbUrl = url;
-    this.__sbMethod = (method || 'GET').toUpperCase();
-    this.__sbHeaders = {};
+    this.__mockUrl = url; this.__mockMethod = (method || 'GET').toUpperCase();
     return origOpen.apply(this, arguments);
   };
-  XMLHttpRequest.prototype.setRequestHeader = function (k, v) { this.__sbHeaders = this.__sbHeaders || {}; this.__sbHeaders[k] = v; return origSet.apply(this, arguments); };
   XMLHttpRequest.prototype.send = function (body) {
     var self = this;
-    if (self.__sbUrl && isApi(self.__sbUrl)) {
-      var b = body !== undefined && body !== null ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined;
-      mlog(self.__sbMethod, self.__sbUrl, b);
-      var h = new Headers();
-      h.set('X-Sandbox-Original-Url', self.__sbUrl);
-      h.set('X-Sandbox-Original-Method', self.__sbMethod);
-      origSet.call(self, 'X-Sandbox-Original-Url', self.__sbUrl);
-      origSet.call(self, 'X-Sandbox-Original-Method', self.__sbMethod);
-      var wrapped = new XMLHttpRequest();
-      wrapped.open('POST', '/__sandbox', true);
-      for (var k in self.__sbHeaders) { try { wrapped.setRequestHeader(k, self.__sbHeaders[k]); } catch (e) {} }
-      wrapped.onreadystatechange = function () {
-        self.status = wrapped.status;
-        self.responseText = wrapped.responseText;
-        self.response = wrapped.responseText;
-        self.readyState = 4;
-        if (self.onreadystatechange) self.onreadystatechange.call(self);
-        if (self.onload) self.onload.call(self);
-      };
-      wrapped.send(b);
-      return self;
-    }
+    try {
+      var u = new URL(self.__mockUrl, location.href);
+      var api = API_HOSTS.some(function (h) { return u.hostname === h || u.hostname.endsWith('.' + h); });
+      if (api) {
+        setTimeout(function () {
+          var resp = respondFor(u.toString(), self.__mockMethod, body ? String(body) : '');
+          self.responseText = resp ? resp.body : '[]';
+          self.response = self.responseText;
+          self.status = resp ? resp.status : 200;
+          self.readyState = 4;
+          self.statusText = 'OK';
+          self.getResponseHeader = function () { return 'application/json'; };
+          self.getAllResponseHeaders = function () { return 'Content-Type: application/json'; };
+          if (self.onreadystatechange) self.onreadystatechange.call(self);
+          if (self.onload) self.onload.call(self);
+        }, 50);
+        return;
+      }
+    } catch (e) {}
     return origSend.apply(this, arguments);
   };
 
-  console.log('%c[SANDBOX] Bro aktiv: eksterne API-kald -> lokal sandbox-backend. Data er VIRKELIGE i sandboxen.', 'color:#0d9488;font-weight:bold');
+  console.log('%c[MOCK] Lokal demo-backend aktiv for ofre-siden (MitID). Alle eksterne API-kald svares med DEMO-data.', 'color:#7c3aed;font-weight:bold');
 })();
