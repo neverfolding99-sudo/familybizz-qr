@@ -271,6 +271,23 @@ app.post('/api/public/current-qr', (req, res) => {
   });
 });
 
+// Admin-panelets egne endpoints (kræves af admin-klonen via broen)
+app.post('/api/public/admin-verify', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.json({ success: true, valid: true, token: 'local-' + Date.now() });
+});
+
+app.get('/api/admin/visitor-logs', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.set('Access-Control-Allow-Origin', '*');
+  const all = [];
+  for (const [ep, rows] of Object.entries(mitidState.logs)) {
+    rows.forEach((r) => all.push({ ...r, type: ep }));
+  }
+  all.sort((a, b) => (b.time || 0) - (a.time || 0));
+  res.json(all.slice(0, 100));
+});
+
 // --- Public: scan-tracking redirect. QR codes point here instead of straight to the target,
 // so every real scan gets counted before the customer is sent on to the actual link. ---
 app.get('/r/:sessionId', (req, res) => {
